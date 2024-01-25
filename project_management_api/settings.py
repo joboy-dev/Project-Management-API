@@ -1,15 +1,18 @@
+from datetime import timedelta
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-nhvw$%el7r=354sub++047%#ch4b70_bu$l0rb&@rqz4n_rw=v'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -29,13 +32,22 @@ INSTALLED_APPS = [
     
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken',
+    # 'drf_yasg',
+    # 'rest_framework.authtoken',
     
     # APPS
     'user.apps.UserConfig',
+    'workspace.apps.WorkspaceConfig',
+    'project.apps.ProjectConfig',
+    'task.apps.TaskConfig',
+    'team.apps.TeamConfig',
+    'category.apps.CategoryConfig',
+    'notification.apps.NotificationConfig',
+    'comment.apps.CommentConfig',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -122,11 +134,20 @@ AUTH_USER_MODEL = 'user.CustomUser'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        # "rest_framework.authentication.TokenAuthentication"
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ]
 }
 
 SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
+
+# Email service
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_POST = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('MY_EMAIL')
+EMAIL_HOST_PASSWORD = os.getenv('PASSWORD')

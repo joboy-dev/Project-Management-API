@@ -11,9 +11,9 @@ User = get_user_model()
 class UserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password', 'first_name',
-         'last_name', 'profile_pic', 'phone_number', 'is_verified', 'subscription_plan')}),
+         'last_name', 'profile_pic', 'phone_number', 'subscription_plan')}),
         (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'is_verified', 'groups', 'user_permissions'),
         })
     )
     model = User
@@ -25,7 +25,7 @@ class UserAdmin(UserAdmin):
     )
     form = UserChangeForm
     add_form = UserCreationForm
-    list_display = ('email', 'id', 'first_name', 'last_name', 'phone_number', 'is_verified', 'subscription_plan')
+    list_display = ('email', 'id', 'first_name', 'last_name', 'phone_number', 'is_active', 'is_verified', 'subscription_plan')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
