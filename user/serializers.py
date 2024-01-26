@@ -13,9 +13,9 @@ class CreateAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'password', 'password2', 'profile_pic', 'phone_number', 'subscription_plan']
+        fields = ['id', 'email', 'first_name', 'last_name', 'password', 'password2', 'profile_pic', 'phone_number', 'subscription_plan', 'is_verified']
+        read_only_fields = ['id', 'is_verified']        
         extra_kwargs = {
-            'id': {'read_only': True},
             'password': {'write_only': True}
         }
 
@@ -41,6 +41,11 @@ class CreateAccountSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         '''Account creation function'''
+        
+        # password = validated_data.pop('password', None)
+        # user = self.create_user(password=password, **validated_data)
+
+        # return user
 
         # get all validated data
         email = validated_data.get('email')
@@ -124,13 +129,14 @@ class LoginSerializer(serializers.Serializer):
         return data
 
     
-class UpdateDetailsSerializer(serializers.ModelSerializer):
+class UserDetailsSerializer(serializers.ModelSerializer):
 
     '''Serializer to update a user's details.'''
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'profile_pic', 'phone_number']        
+        fields = ['id', 'first_name', 'last_name', 'profile_pic', 'phone_number', 'is_verified']
+        read_only_fields = ['id', 'is_verified']        
     
     def update(self, instance, validated_data):
         '''Update details function'''

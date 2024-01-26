@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     
     'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     # 'drf_yasg',
     # 'rest_framework.authtoken',
     
@@ -140,8 +141,9 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 # Email service

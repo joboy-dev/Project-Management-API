@@ -5,9 +5,7 @@ from pathlib import Path
 
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
 from django.urls import reverse
-from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 
 from rest_framework.views import APIView
@@ -79,11 +77,13 @@ class VerifyEmailView(generics.GenericAPIView):
     '''View to verify email address'''
     
     def get(self, request):
+        # get token from url parameters
         token = request.GET['token']
         
         try:
             # decode token
             payload = jwt.decode(token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+            # get user based on user_id from payload
             user = User.objects.get(id=payload['user_id'])
                         
             if user.is_verified:
@@ -146,11 +146,11 @@ class LoginView(generics.GenericAPIView):
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
         
 
-class UpdateDetailsView(generics.RetrieveUpdateAPIView):
+class UserDetailsView(generics.RetrieveUpdateAPIView):
     '''View to get, update user account'''
     
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.UpdateDetailsSerializer
+    serializer_class = serializers.UserDetailsSerializer
     
     def get_object(self):
         return self.request.user
@@ -176,13 +176,14 @@ class ChangeEmailView(generics.UpdateAPIView):
         
         try:
             super().update(request, *args, **kwargs)
+            # send email verification to new email
             send_verification_email(self.request, email=serializer.data['email'])
             
             # Get user details
             user = User.objects.get(id=self.request.user.id)
             print(user.email)
             
-            # Make user unverifed
+            # Make user unverifed because of change in email
             user.is_verified = False
             user.save()            
             
@@ -216,5 +217,21 @@ class ChangePasswordView(generics.UpdateAPIView):
 class LogoutView(generics.GenericAPIView):
     ''' View to logout users'''
     
+    permission_classes = [IsAuthenticated]
     
+    def post(self, request):
+        # try:
+        
+        # Optionally, you can also invalidate the refresh token
+        refresh_token = request.data.get('refresh_token')
+        RefreshToken(refresh_token).blacklist()
+        
+        return Response({'message': 'Successfully logged out'}, status=status.HTTP_200_OK)
+            
+        # except Exception as e:
+        #     return Response({
+        #         'exception': f'{e}',
+        #         'error': 'An error occured while logging out',
+        #     }, status=status.HTTP_400_BAD_REQUEST)
+        
     

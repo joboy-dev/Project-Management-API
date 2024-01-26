@@ -27,7 +27,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     profile_pic = models.ImageField(default='profile_pictures/default.png', upload_to='profile_pics', null=True)
     phone_number = models.CharField(max_length=11, null=False)
     is_verified = models.BooleanField(default=False)
-    # verification_token = models.UUIDField(default=uuid4)
     subscription_plan = models.CharField(choices=subscription_choices, default=BASIC, null=False, max_length=10)
     
     is_active = models.BooleanField(default=True)
@@ -44,3 +43,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
