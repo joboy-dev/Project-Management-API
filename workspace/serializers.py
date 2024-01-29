@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+
 from workspace.models import Member, Workspace
 
 User = get_user_model()
@@ -7,10 +8,7 @@ User = get_user_model()
 class CreateWorkspaceSerializer(serializers.ModelSerializer):
     '''Serializer to create a new workspace'''
     
-    creator = serializers.SerializerMethodField(read_only=True)
-    
-    def get_creator(self, obj):
-        return obj.creator.email
+    creator = serializers.StringRelatedField(read_only=True)
     
     class Meta:
         model = Workspace
@@ -58,10 +56,7 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
 class WorkspaceDetailsSerializer(serializers.ModelSerializer):
     '''Serializer for handling workspace details'''
     
-    creator = serializers.SerializerMethodField(read_only=True)
-    
-    def get_creator(self, obj):
-        return obj.creator.email
+    creator = serializers.StringRelatedField(read_only=True)
     
     class Meta:
         model = Workspace
@@ -79,20 +74,14 @@ class WorkspaceDetailsSerializer(serializers.ModelSerializer):
 class MemberSerializer(serializers.ModelSerializer):
     '''Serializer to add a member to a workspace and also get all members in a workspace'''
     
-    workspace = serializers.SerializerMethodField(read_only=True)
-    user = serializers.SerializerMethodField(read_only=True)
-    
-    def get_workspace(self, obj):
-        return obj.workspace.name
-    
-    def get_user(self, obj):
-        return obj.user.email
+    workspace = serializers.StringRelatedField(read_only=True)
+    user = serializers.StringRelatedField(read_only=True)    
     
     class Meta:
         model = Member
         fields = '__all__'
         read_only_fields = ['user', 'workspace', 'date_joined']
-        
+            
     def create(self, validated_data):
         workspace_id = self.context['view'].kwargs['workspace_id']
         user_id = self.context['view'].kwargs['user_id']

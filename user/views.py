@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenViewBase
 import jwt
 
 from . import serializers
@@ -147,18 +148,13 @@ class LoginView(generics.GenericAPIView):
         
 
 class UserDetailsView(generics.RetrieveUpdateAPIView):
-    '''View to get, update user account'''
+    '''View to get, and update user account'''
     
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.UserDetailsSerializer
     
     def get_object(self):
         return self.request.user
-    
-    def perform_update(self, serializer):
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
     
 
 class ChangeEmailView(generics.UpdateAPIView):
@@ -218,20 +214,15 @@ class LogoutView(generics.GenericAPIView):
     ''' View to logout users'''
     
     permission_classes = [IsAuthenticated]
+    serializer_class = serializers.LogoutSerializer
     
     def post(self, request):
-        # try:
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
         
-        # Optionally, you can also invalidate the refresh token
-        refresh_token = request.data.get('refresh_token')
-        RefreshToken(refresh_token).blacklist()
-        
-        return Response({'message': 'Successfully logged out'}, status=status.HTTP_200_OK)
-            
-        # except Exception as e:
-        #     return Response({
-        #         'exception': f'{e}',
-        #         'error': 'An error occured while logging out',
-        #     }, status=status.HTTP_400_BAD_REQUEST)
-        
+
+class RefreshTokenView(TokenViewBase):
+    '''View to refresh token'''
     
+    serializer_class = serializers.RefreshAccessSerializer

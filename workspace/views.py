@@ -30,20 +30,17 @@ class WorkspaceDetailsView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.WorkspaceDetailsSerializer
     
-    def get(self, request, *args, **kwargs):
-        id = self.kwargs['id']
-        
+    def get(self, request, *args, **kwargs):        
         try:
-            workspace = Workspace.objects.get(id=id)
-            serialiser = self.serializer_class(workspace)
-            return Response(serialiser.data, status=status.HTTP_200_OK)
+            workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
+            serializer = self.serializer_class(workspace)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         
         except Workspace.DoesNotExist:
             return Response({'error': 'Workspace does not exist'}, status=status.HTTP_404_NOT_FOUND)
     
     def get_object(self):
-        id = self.kwargs['id']
-        workspace = Workspace.objects.get(id=id)
+        workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
         self.check_object_permissions(self.request, workspace)
         return workspace
     
@@ -94,7 +91,7 @@ class RemoveMemberFromWorkspaceView(generics.GenericAPIView):
             return Response({'error': 'You cannot remove yourself from the workspace'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             try:
-                # get member to delete
+                # get member to delete based on the workspace and user objects
                 member = Member.objects.get(workspace=workspace, user=user)
                 member.delete()
                 
@@ -127,7 +124,11 @@ class GetWorkspaceMembersView(generics.ListAPIView):
         members = Member.objects.filter(workspace=workspace)
         serializer = self.serializer_class(members, many=True)
         
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if members.exists():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'There are no members in this workspace'}, status=status.HTTP_204_NO_CONTENT)
+        
     
 
 class UpdateMemberRoleView(generics.UpdateAPIView):

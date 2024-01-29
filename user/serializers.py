@@ -3,6 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 User = get_user_model()
 
@@ -222,4 +223,43 @@ class UpdateSubscriptionPlanSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
+
+
+class LogoutSerializer(serializers.Serializer):
+    '''Serializer to log out user'''
     
+    refresh = serializers.CharField(required=True)
+    
+    def validate(self, data):
+        refresh = data['refresh']
+        
+        try:
+            refresh_token = RefreshToken(refresh)
+            refresh_token.verify()
+        except TokenError as e:
+            raise serializers.ValidationError({'error': f'{e}'})
+        
+        # blacklist token
+        refresh_token.blacklist()
+        return data
+    
+
+class RefreshAccessSerializer(serializers.Serializer):
+    '''Serializer to return new access and refresh token and blacklist old refresh token'''
+    
+    refresh = serializers.CharField(required=True)
+    access = serializers.CharField(read_only=True)
+    
+    def validate(self, data):
+        refresh_token = RefreshToken(data['refresh'])
+        refresh_token.verify()
+        
+        refresh_token.blacklist()
+        
+        refresh_token.set_exp()
+        refresh_token.set_iat()
+        refresh_token.set_jti()
+        
+        data['access'] = str(refresh_token.access_token)
+        data['refresh'] = str(refresh_token)
+        return data

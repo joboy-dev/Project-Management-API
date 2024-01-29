@@ -7,6 +7,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user.urls')),
     path('workspace/', include('workspace.urls')),
+    path('project/', include('project.urls')),
+    # path('project/', include('project.urls')),
 ]
 
 if settings.DEBUG:
