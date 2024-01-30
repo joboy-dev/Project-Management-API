@@ -15,7 +15,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
-        read_only_fields = ['id', 'workspace', 'members']
+        read_only_fields = ['id', 'workspace', 'members', 'created_by']
         
     def validate(self, data):
         # Remove timezone
@@ -59,7 +59,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             description=description,
             start_date=start_date,
             end_date=end_date,
-            workspace=workspace
+            workspace=workspace,
+            created_by=self.context['request'].user
         )
         
         # add member to members list in project
@@ -77,7 +78,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
-        read_only_fields = ['id', 'workspace', 'members']
+        read_only_fields = ['id', 'workspace', 'members', 'created_by']
         
     def validate(self, data):
         # Remove timezone

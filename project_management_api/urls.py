@@ -8,7 +8,7 @@ urlpatterns = [
     path('user/', include('user.urls')),
     path('workspace/', include('workspace.urls')),
     path('project/', include('project.urls')),
-    # path('project/', include('project.urls')),
+    path('team/', include('team.urls')),
 ]
 
 if settings.DEBUG:

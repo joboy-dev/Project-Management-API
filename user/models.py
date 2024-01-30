@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils.translation import gettext_lazy
@@ -8,6 +10,11 @@ from .manager import CustomUserManager
 # Create your models here.
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     '''Custom user model'''
+    
+    def upload_image(model, filename):
+        '''Function to upload image and save in a folder for each object'''
+        extension = filename.split('.')[-1]
+        return os.path.join('user', model.email, f'user_pic.{extension}')
     
     # Subscription
     BASIC = 'basic'
@@ -24,7 +31,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(gettext_lazy('email address'), unique=True, null=False)
     first_name = models.CharField(max_length=128, null=False)
     last_name = models.CharField(max_length=128, null=False)
-    profile_pic = models.ImageField(default='profile_pictures/default.png', upload_to='profile_pics', null=True)
+    profile_pic = models.ImageField(default='profile_pics/default.png', upload_to=upload_image, null=True)
     phone_number = models.CharField(max_length=11, null=False)
     is_verified = models.BooleanField(default=False)
     subscription_plan = models.CharField(choices=subscription_choices, default=BASIC, null=False, max_length=10)
