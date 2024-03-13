@@ -3,9 +3,12 @@ from project.models import Project
 
 from team.models import Team
 from workspace.models import Member
+from workspace.serializers import MemberSerializer
 
 class CreateTeamSerializer(serializers.ModelSerializer):
     '''Serializer for handling creation of team'''
+    
+    members = MemberSerializer(many=True, read_only=True)
     
     class Meta:
         model = Team
@@ -40,6 +43,8 @@ class CreateTeamSerializer(serializers.ModelSerializer):
 
 class TeamDetailsSerializer(serializers.ModelSerializer):
     '''Serializer for team details'''
+    
+    members = MemberSerializer(many=True, read_only=True)
     
     class Meta:
         model = Team

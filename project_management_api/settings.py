@@ -19,9 +19,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,10 +28,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    'drf_yasg',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'drf_yasg',
     
     # APPS
     'user.apps.UserConfig',
@@ -134,14 +132,15 @@ AUTH_USER_MODEL = 'user.CustomUser'
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+    ],
 }
 
 SIMPLE_JWT = {
-    'ROTATE_REFRESH_TOKENS': True,
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
 }
 
 SWAGGER_SETTINGS = {

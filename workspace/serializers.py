@@ -80,7 +80,7 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = '__all__'
-        read_only_fields = ['user', 'workspace', 'date_joined']
+        read_only_fields = ['id', 'user', 'workspace', 'date_joined']
             
     def create(self, validated_data):
         workspace_id = self.context['view'].kwargs['workspace_id']
@@ -90,7 +90,7 @@ class MemberSerializer(serializers.ModelSerializer):
         user = User.objects.get(id=user_id)
         role = validated_data.get('role')
         
-        # check if user you want to add is already in another workspace
+        # check if user you want to add is already in another workspace by checking if the user is already in the members object
         if Member.objects.filter(user=user).exists():
             raise serializers.ValidationError({'error': 'The user is already in a workspace'})
         
@@ -133,6 +133,7 @@ class UpdateMemberSerializer(serializers.ModelSerializer):
         
         if user == self.context['request'].user:
             raise serializers.ValidationError({'error': 'You cannot edit your own role'})
+        
         return data
         
     def update(self, instance, validated_data):

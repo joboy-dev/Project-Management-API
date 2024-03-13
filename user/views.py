@@ -194,7 +194,6 @@ class ChangeEmailView(generics.UpdateAPIView):
             status=status.HTTP_201_CREATED
         )
 
-    
 
 class ChangePasswordView(generics.UpdateAPIView):
     '''View to change user password'''

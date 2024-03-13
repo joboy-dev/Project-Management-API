@@ -8,6 +8,7 @@ from rest_framework import status
 from project.models import Project
 from workspace.models import Member, Workspace
 from .permissions import IsProjectWorkspaceOwnerOrReadOnly, IsProjectMemberOrReadOnly
+from workspace.permissions import IsMemberOrReadOnly
 
 from . import serializers
 
@@ -27,6 +28,8 @@ class CreateProjectView(generics.CreateAPIView):
     
 
 class ProjectDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    '''View to get, update, and delete project'''
+    
     serializer_class = serializers.ProjectDetailsSerializer
     permission_classes = [IsAuthenticated, IsProjectWorkspaceOwnerOrReadOnly]
     
@@ -68,7 +71,7 @@ class AddMemberToProjectView(generics.GenericAPIView):
         self.check_object_permissions(request, obj=project)
         member = members.first()
         
-        if members.count() == 0:
+        if not members.exists():
             return Response({'error': 'Member does not exist in this workspace'}, status=status.HTTP_404_NOT_FOUND)
         
         # if member.user == request.user:
@@ -144,7 +147,7 @@ class GetProjectsInWorkspaceView(generics.ListAPIView):
 class MarkProjectAsCompleteView(generics.GenericAPIView):
     '''View to mark a project as complete'''
     
-    permission_classes = [IsAuthenticated, IsProjectWorkspaceOwnerOrReadOnly, IsProjectMemberOrReadOnly]
+    permission_classes = [IsAuthenticated, IsProjectWorkspaceOwnerOrReadOnly, IsMemberOrReadOnly]
     
     def post(self, request, project_id):
         project = Project.objects.get(id=self.kwargs['project_id'])

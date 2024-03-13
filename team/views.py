@@ -9,6 +9,7 @@ from project.models import Project
 from team.models import Team
 from team.permissions import IsTeamWorkspaceOwnerOrEditorOrReadOnly, IsTeamMemberOrReadOnly
 from workspace.models import Member
+from workspace.permissions import IsMemberOrReadOnly
 
 from . import serializers
 
@@ -58,21 +59,24 @@ class TeamDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class AddMemberToTeamView(generics.GenericAPIView):
     '''View to add a member to a team'''
     
-    permission_classes = [IsAuthenticated, IsTeamMemberOrReadOnly, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, team_id, member_id):
         team = Team.objects.get(id=self.kwargs['team_id'])
-        member = Member.objects.get(id=self.kwargs['member_id'])
+        members = Member.objects.filter(id=self.kwargs['member_id'], workspace=team.project.workspace)
         self.check_object_permissions(request, obj=team)
         
+        if not members.exists():
+            return Response({'error': 'This member does not exist in this workspace'}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            if team.members.contains(member):
+            if team.members.contains(members.first()):
                 return Response({'error': 'This member is already in the team'}, status=status.HTTP_400_BAD_REQUEST)
         
-            team.members.add(member)
+            team.members.add(members.first())
             team.save()
             
-            return Response({'message': f'Member {member.user.email} added to team'})
+            return Response({'message': f'Member {members.first().user.email} added to team'})
         
         except Member.DoesNotExist:
             return Response({'error': 'Member does not exist in this team'}, status=status.HTTP_404_NOT_FOUND)
@@ -84,21 +88,24 @@ class AddMemberToTeamView(generics.GenericAPIView):
 class RemoveMemberFromTeamView(generics.GenericAPIView):
     '''View to remove a member from a team'''
     
-    permission_classes = [IsAuthenticated, IsTeamMemberOrReadOnly, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, team_id, member_id):
         team = Team.objects.get(id=self.kwargs['team_id'])
-        member = Member.objects.get(id=self.kwargs['member_id'])
+        members = Member.objects.filter(id=self.kwargs['member_id'], workspace=team.project.workspace)
         self.check_object_permissions(request, obj=team)
         
+        if not members.exists():
+            return Response({'error': 'This member does not exist in this workspace'}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            if not team.members.contains(member):
+            if not team.members.contains(members.first()):
                 return Response({'error': 'This member is not in the team'}, status=status.HTTP_400_BAD_REQUEST)
         
-            team.members.remove(member)
+            team.members.remove(members.first())
             team.save()
             
-            return Response({'message': f'Member {member.user.email} removed from team'})
+            return Response({'message': f'Member {members.first().user.email} removed from team'})
         
         except Member.DoesNotExist:
             return Response({'error': 'Member does not exist in this team'}, status=status.HTTP_404_NOT_FOUND)
@@ -108,7 +115,7 @@ class RemoveMemberFromTeamView(generics.GenericAPIView):
            
 
 class GetAllProjectTeams(generics.ListAPIView):
-    '''View to get tasks for a specific team'''
+    '''View to get all teams in a specific project'''
     
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.TeamDetailsSerializer

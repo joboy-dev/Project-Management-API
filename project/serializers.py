@@ -4,6 +4,7 @@ from rest_framework import serializers
 from datetime import datetime
 from project.models import Project
 from workspace.models import Member, Workspace
+from workspace.serializers import MemberSerializer
 
 User = get_user_model()
 
@@ -11,6 +12,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     '''Serializer to create a new project'''
     
     workspace = serializers.StringRelatedField(read_only=True)
+    members = MemberSerializer(many=True, read_only=True)
     
     class Meta:
         model = Project
@@ -80,6 +82,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     '''Serializer to create a new project'''
     
     workspace = serializers.StringRelatedField(read_only=True)
+    members = MemberSerializer(many=True, read_only=True)
     
     class Meta:
         model = Project
@@ -108,5 +111,4 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             
         instance.save()
         return instance
-        
           

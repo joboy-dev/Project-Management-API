@@ -68,6 +68,7 @@ class AddMemberToWorkspaceView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         
         workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
+        # Check permission class
         self.check_object_permissions(self.request, workspace)
         
         serializer.save()
@@ -131,7 +132,6 @@ class GetWorkspaceMembersView(generics.ListAPIView):
             return Response({'error': 'There are no members in this workspace'}, status=status.HTTP_204_NO_CONTENT)
         
     
-
 class UpdateMemberRoleView(generics.UpdateAPIView):
     '''View to update workspace member role'''
     

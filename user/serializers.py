@@ -44,24 +44,11 @@ class CreateAccountSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         '''Account creation function'''
         
-        # get all validated data
-        email = validated_data.get('email')
-        first_name = validated_data.get('first_name')
-        last_name = validated_data.get('last_name')
         password = validated_data.get('password')
-        profile_pic = validated_data.get('profile_pic')
-        phone_number = validated_data.get('phone_number')
-        subscription_plan = validated_data.get('subscription_plan')
+        validated_data.pop('password2')
 
         # assign validated data to the data in User model
-        account = User(
-            email=email, 
-            first_name=first_name, 
-            last_name=last_name,
-            profile_pic=profile_pic,
-            phone_number=phone_number,
-            subscription_plan=subscription_plan,
-        )
+        account = User.objects.create(**validated_data)
 
         # set password
         account.set_password(raw_password=password)
