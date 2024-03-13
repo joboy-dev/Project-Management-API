@@ -32,22 +32,18 @@ class CreateAccountSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'This subscription plan is not available. Choose between basic, premium, and enterprise'})
         
         # check if email exists
-        elif User.objects.filter(email=data['email']).exists():
+        if User.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError({'error': 'Email already exists'})
         
         # validate password
         validate_password(data['password'])
+        
         # return validated data
         return data
     
     def create(self, validated_data):
         '''Account creation function'''
         
-        # password = validated_data.pop('password', None)
-        # user = self.create_user(password=password, **validated_data)
-
-        # return user
-
         # get all validated data
         email = validated_data.get('email')
         first_name = validated_data.get('first_name')
@@ -223,7 +219,6 @@ class UpdateSubscriptionPlanSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-
 
 class LogoutSerializer(serializers.Serializer):
     '''Serializer to log out user'''

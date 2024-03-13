@@ -7,8 +7,8 @@ from rest_framework import status
 
 from project.models import Project
 from team.models import Team
-from team.permissions import IsTeamWorkspaceOwnerOrEditorOrReadOnly
-from workspace.models import Member, Workspace
+from team.permissions import IsTeamWorkspaceOwnerOrEditorOrReadOnly, IsTeamMemberOrReadOnly
+from workspace.models import Member
 
 from . import serializers
 
@@ -37,13 +37,94 @@ class TeamDetailsView(generics.RetrieveUpdateDestroyAPIView):
             return Response({'error': 'Team doe snot exist'}, status=status.HTTP_404_NOT_FOUND)
             
     def get_object(self):
-        team = Team.objects.filter(id=self.kwargs['team_id'])
+        team = Team.objects.get(id=self.kwargs['team_id'])
         self.check_object_permissions(self.request, obj=team)
         return team
     
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except Team.DoesNotExist:
+            return Response({'error': 'Team does not exist'}, status=status.HTTP_404_NOT_FOUND)  
+        
     def delete(self, request, *args, **kwargs):
         try:
             super().delete(request, *args, **kwargs)
             return Response({'message': 'Team deleted'}, status=status.HTTP_200_OK)
-        except Project.DoesNotExist:
+        except Team.DoesNotExist:
             return Response({'error': 'Team does not exist'}, status=status.HTTP_404_NOT_FOUND)  
+        
+        
+class AddMemberToTeamView(generics.GenericAPIView):
+    '''View to add a member to a team'''
+    
+    permission_classes = [IsAuthenticated, IsTeamMemberOrReadOnly, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
+    
+    def post(self, request, team_id, member_id):
+        team = Team.objects.get(id=self.kwargs['team_id'])
+        member = Member.objects.get(id=self.kwargs['member_id'])
+        self.check_object_permissions(request, obj=team)
+        
+        try:
+            if team.members.contains(member):
+                return Response({'error': 'This member is already in the team'}, status=status.HTTP_400_BAD_REQUEST)
+        
+            team.members.add(member)
+            team.save()
+            
+            return Response({'message': f'Member {member.user.email} added to team'})
+        
+        except Member.DoesNotExist:
+            return Response({'error': 'Member does not exist in this team'}, status=status.HTTP_404_NOT_FOUND)
+            
+        except Team.DoesNotExist:
+            return Response({'error': 'Team does not exist'}, status=status.HTTP_404_NOT_FOUND)
+           
+
+class RemoveMemberFromTeamView(generics.GenericAPIView):
+    '''View to remove a member from a team'''
+    
+    permission_classes = [IsAuthenticated, IsTeamMemberOrReadOnly, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
+    
+    def post(self, request, team_id, member_id):
+        team = Team.objects.get(id=self.kwargs['team_id'])
+        member = Member.objects.get(id=self.kwargs['member_id'])
+        self.check_object_permissions(request, obj=team)
+        
+        try:
+            if not team.members.contains(member):
+                return Response({'error': 'This member is not in the team'}, status=status.HTTP_400_BAD_REQUEST)
+        
+            team.members.remove(member)
+            team.save()
+            
+            return Response({'message': f'Member {member.user.email} removed from team'})
+        
+        except Member.DoesNotExist:
+            return Response({'error': 'Member does not exist in this team'}, status=status.HTTP_404_NOT_FOUND)
+            
+        except Team.DoesNotExist:
+            return Response({'error': 'Team does not exist'}, status=status.HTTP_404_NOT_FOUND)
+           
+
+class GetAllProjectTeams(generics.ListAPIView):
+    '''View to get tasks for a specific team'''
+    
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.TeamDetailsSerializer
+    
+    def get_queryset(self):
+        project = Project.objects.get(id=self.kwargs['project_id'])
+        teams = Team.objects.filter(project=project)
+        return teams
+    
+    def list(self, request, *args, **kwargs):
+        project = Project.objects.get(id=self.kwargs['project_id'])
+        teams = Team.objects.filter(project=project)
+        serializer = self.serializer_class(teams, many=True)
+        
+        if teams.exists():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'There are no teams in this project'}, status=status.HTTP_204_NO_CONTENT)
+        

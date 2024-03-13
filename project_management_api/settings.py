@@ -30,11 +30,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
+    'drf_yasg',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
-    # 'drf_yasg',
-    # 'rest_framework.authtoken',
     
     # APPS
     'user.apps.UserConfig',
@@ -42,7 +41,6 @@ INSTALLED_APPS = [
     'project.apps.ProjectConfig',
     'task.apps.TaskConfig',
     'team.apps.TeamConfig',
-    'category.apps.CategoryConfig',
     'notification.apps.NotificationConfig',
     'comment.apps.CommentConfig',
 ]
@@ -63,7 +61,7 @@ ROOT_URLCONF = 'project_management_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR/'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -144,6 +142,17 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'BLACKLIST_AFTER_ROTATION': True,
+}
+
+SWAGGER_SETTINGS = {
+    # 'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
 }
 
 # Email service

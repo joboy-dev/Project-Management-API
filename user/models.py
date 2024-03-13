@@ -14,7 +14,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def upload_image(model, filename):
         '''Function to upload image and save in a folder for each object'''
         extension = filename.split('.')[-1]
-        return os.path.join('user', model.email, f'user_pic.{extension}')
+        return os.path.join('user', str(model.id), f'user_pic.{extension}')
     
     # Subscription
     BASIC = 'basic'

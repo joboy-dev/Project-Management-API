@@ -15,7 +15,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
-        read_only_fields = ['id', 'workspace', 'members', 'created_by']
+        read_only_fields = ['id', 'workspace', 'members', 'created_by', 'is_complete']
         
     def validate(self, data):
         # Remove timezone
@@ -26,6 +26,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         if ((data['start_date']) < now) or (data['end_date'] < now):
             raise serializers.ValidationError({'error': 'Date cannot be in the past'})
         
+        if data['start_date'] > data['end_date']:
+            raise serializers.ValidationError({'error': 'Start date cannot be greater than end date'})
+        
         workspace_id = self.context['view'].kwargs['workspace_id']
         workspace = Workspace.objects.get(id=workspace_id)
         
@@ -33,7 +36,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         member = Member.objects.filter(user=self.context['request'].user, workspace=workspace)
        
         # check if user belongs in workspace
-        if member.count() == 0:
+        if not member.exists():
             raise serializers.ValidationError({'error': 'You do not exist in this workspace'})
         
         # check if member is an editor
@@ -47,6 +50,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         description = validated_data.get('description')
         start_date = validated_data.get('start_date')
         end_date = validated_data.get('end_date')
+        label_color = validated_data.get('label_color')
         
         workspace_id = self.context['view'].kwargs['workspace_id']
         workspace = Workspace.objects.get(id=workspace_id)
@@ -57,10 +61,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         project = Project.objects.create(
             name=name,
             description=description,
+            label_color=label_color,
+            is_complete=False,
             start_date=start_date,
             end_date=end_date,
             workspace=workspace,
-            created_by=self.context['request'].user
+            created_by=member.first()
         )
         
         # add member to members list in project
@@ -78,7 +84,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
-        read_only_fields = ['id', 'workspace', 'members', 'created_by']
+        read_only_fields = ['id', 'workspace', 'members', 'created_by', 'is_complete']
         
     def validate(self, data):
         # Remove timezone

@@ -7,7 +7,7 @@ from rest_framework import status
 
 from project.models import Project
 from workspace.models import Member, Workspace
-from .permissions import IsProjectWorkspaceOwnerOrReadOnly
+from .permissions import IsProjectWorkspaceOwnerOrReadOnly, IsProjectMemberOrReadOnly
 
 from . import serializers
 
@@ -43,24 +43,11 @@ class ProjectDetailsView(generics.RetrieveUpdateDestroyAPIView):
         self.check_object_permissions(self.request, obj=project)
         return project
     
-    # def update(self, request, *args, **kwargs):
-    #     serializer = self.serializer_class(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-        
-    #     try:
-    #         super().update(request, *args, **kwargs)
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     except Project.DoesNotExist:
-    #         return Response({'error': 'Project does not exist'}, status=status.HTTP_404_NOT_FOUND)  
-    
-    # def perform_update(self, serializer):
-    #     serializer.is_valid(raise_exception=True)
-    #     try:
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     except Project.DoesNotExist:
-    #         return Response({'error': 'Project does not exist'}, status=status.HTTP_404_NOT_FOUND)
-            
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project does not exist'}, status=status.HTTP_404_NOT_FOUND)  
     
     def delete(self, request, *args, **kwargs):
         try:
@@ -153,5 +140,21 @@ class GetProjectsInWorkspaceView(generics.ListAPIView):
         else:
             return Response({'error': 'There are no projects in this workspace'}, status=status.HTTP_204_NO_CONTENT)
         
+
+class MarkProjectAsCompleteView(generics.GenericAPIView):
+    '''View to mark a project as complete'''
     
+    permission_classes = [IsAuthenticated, IsProjectWorkspaceOwnerOrReadOnly, IsProjectMemberOrReadOnly]
+    
+    def post(self, request, project_id):
+        project = Project.objects.get(id=self.kwargs['project_id'])
+        member = Member.objects.get(user=request.user)
+        self.check_object_permissions(request, obj=project)
         
+        try:
+            project.is_complete = True
+            project.save()      
+            return Response({'message': 'Project marked as complete'}, status=status.HTTP_200_OK)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            

@@ -29,7 +29,7 @@ class CreateTeamSerializer(serializers.ModelSerializer):
             name=name,
             team_pic=team_pic,
             project=project,
-            created_by=self.context['request'].user,
+            created_by=member.first(),
         )
         
         team.members.set(member)

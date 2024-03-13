@@ -44,10 +44,11 @@ class WorkspaceDetailsView(generics.RetrieveUpdateDestroyAPIView):
         self.check_object_permissions(self.request, workspace)
         return workspace
     
-    def perform_update(self, serializer):
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except Workspace.DoesNotExist:
+            return Response({'error': 'Workspace does not exist'}, status=status.HTTP_404_NOT_FOUND)
     
     def delete(self, request, *args, **kwargs):
         try:
@@ -138,11 +139,8 @@ class UpdateMemberRoleView(generics.UpdateAPIView):
     serializer_class = serializers.UpdateMemberSerializer
     
     def get_object(self):
-        workspace_id = self.kwargs['workspace_id']
-        user_id = self.kwargs['user_id']
-        
-        user = User.objects.get(id=user_id)
-        workspace = Workspace.objects.get(id=workspace_id)
+        user = User.objects.get(id=self.kwargs['user_id'])
+        workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
         
         member = Member.objects.get(user=user, workspace=workspace)
         
