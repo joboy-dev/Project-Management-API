@@ -5,9 +5,12 @@ from project.models import Project
 from task.models import Task
 from team.models import Team
 from workspace.models import Member
+from workspace.serializers import MemberSerializer
 
 class CreateGeneralProjectTaskSerializer(serializers.ModelSerializer):
     '''Serializer to create a non-team task'''
+    
+    members = MemberSerializer(read_only=True, many=True)
         
     class Meta:
         model = Task
@@ -28,7 +31,7 @@ class CreateGeneralProjectTaskSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'Start date cannot be greater than end date'})
         
         project = Project.objects.get(id=self.context['view'].kwargs['project_id'])
-        # get member based on logged in user and project workspace
+        # get member based on logged in user and project workspace to avoid another user creating a task in a project that is not in their workspace
         member = Member.objects.filter(user=self.context['request'].user, workspace=project.workspace)
         
         if not member.exists():
@@ -36,6 +39,10 @@ class CreateGeneralProjectTaskSerializer(serializers.ModelSerializer):
         
         if member.first().role != 'editor':
             raise serializers.ValidationError({'error': 'You are not an editor in the workspace'})
+        
+        # Check if task start or end date is past project start or end date
+        if data['start_date'] > project.end_date.replace(tzinfo=None) or data['end_date'] > project.end_date.replace(tzinfo=None):
+            raise serializers.ValidationError({'error': 'Task start or end dates must not be after project end date'})
             
         return data
     
@@ -70,6 +77,8 @@ class CreateGeneralProjectTaskSerializer(serializers.ModelSerializer):
     
 class CreateTeamTaskSerializer(serializers.ModelSerializer):
     '''Serializer to create a team task'''
+    
+    members = MemberSerializer(read_only=True, many=True)
     
     class Meta:
         model = Task
@@ -107,6 +116,10 @@ class CreateTeamTaskSerializer(serializers.ModelSerializer):
         # check if logged in member is part of the team
         if not team.members.contains(member.first()):
             raise serializers.ValidationError({'error': 'You do not belong in this team'})
+        
+        # Check if task start or end date is past project start or end date
+        if data['start_date'] > project.end_date.replace(tzinfo=None) or data['end_date'] > project.end_date.replace(tzinfo=None):
+            raise serializers.ValidationError({'error': 'Task start or end dates must not be after project end date'})
             
         return data
     
@@ -115,13 +128,13 @@ class CreateTeamTaskSerializer(serializers.ModelSerializer):
         description = validated_data.get('description')
         label_color = validated_data.get('label_color')
         start_date = validated_data.get('start_date')
-        end_date = validated_data.get('end_date')        
+        end_date = validated_data.get('end_date')     
+           
         project = Project.objects.get(id=self.context['view'].kwargs['project_id'])
-        
         # filter member object so that members from outside the workspace cannot be added
         member = Member.objects.filter(user=self.context['request'].user, workspace=project.workspace)
         team = Team.objects.get(id=self.context['view'].kwargs['team_id'])
-        
+                
         task = Task.objects.create(
             name=name,
             description=description,
@@ -145,6 +158,8 @@ class CreateTeamTaskSerializer(serializers.ModelSerializer):
 
 class TaskDetailSerializer(serializers.ModelSerializer):
     '''Serializer for task details'''
+    
+    members = MemberSerializer(read_only=True, many=True)
     
     class Meta:
         model = Task

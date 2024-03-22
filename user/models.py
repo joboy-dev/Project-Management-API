@@ -31,7 +31,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(gettext_lazy('email address'), unique=True, null=False)
     first_name = models.CharField(max_length=128, null=False)
     last_name = models.CharField(max_length=128, null=False)
-    profile_pic = models.ImageField(default='profile_pics/default.png', upload_to=upload_image, null=True)
+    profile_pic = models.ImageField(default='user/default.png', upload_to=upload_image, null=True)
     phone_number = models.CharField(max_length=11, null=False)
     is_verified = models.BooleanField(default=False)
     subscription_plan = models.CharField(choices=subscription_choices, default=BASIC, null=False, max_length=10)

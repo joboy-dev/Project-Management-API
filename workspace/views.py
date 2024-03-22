@@ -79,6 +79,7 @@ class RemoveMemberFromWorkspaceView(generics.GenericAPIView):
     '''View to remove member from workspace'''
     
     permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
+    serializer_class = serializers.MemberSerializer
     
     def post(self, request, workspace_id, user_id):
         workspace_id = self.kwargs['workspace_id']

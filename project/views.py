@@ -144,7 +144,7 @@ class GetProjectsInWorkspaceView(generics.ListAPIView):
             return Response({'error': 'There are no projects in this workspace'}, status=status.HTTP_204_NO_CONTENT)
         
 
-class MarkProjectAsCompleteView(generics.GenericAPIView):
+class ToggleCompletionStatusView(generics.GenericAPIView):
     '''View to mark a project as complete'''
     
     permission_classes = [IsAuthenticated, IsProjectWorkspaceOwnerOrReadOnly, IsMemberOrReadOnly]
@@ -155,9 +155,15 @@ class MarkProjectAsCompleteView(generics.GenericAPIView):
         self.check_object_permissions(request, obj=project)
         
         try:
-            project.is_complete = True
-            project.save()      
-            return Response({'message': 'Project marked as complete'}, status=status.HTTP_200_OK)
+            if project.is_complete:    
+                project.is_complete = False
+                project.save()      
+                return Response({'message': 'Project marked as incomplete'}, status=status.HTTP_200_OK)
+            else:
+                project.is_complete = True
+                project.save()      
+                return Response({'message': 'Project marked as complete'}, status=status.HTTP_200_OK)
+            
         except Project.DoesNotExist:
             return Response({'error': 'Project does not exist'}, status=status.HTTP_404_NOT_FOUND)
             

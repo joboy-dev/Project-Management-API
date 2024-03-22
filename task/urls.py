@@ -7,6 +7,9 @@ urlpatterns = [
     path('create/project/<uuid:project_id>/', views.CreateGeneralProjectTaskView.as_view(), name='create-general-task'),
     path('create/project/<uuid:project_id>/team/<uuid:team_id>/', views.CreateTeamTaskView.as_view(), name='create-team-task'),
     path('team/<uuid:team_id>/', views.GetTasksForTeamView.as_view(), name='tasks-for-team'),
-    # path('<uuid:team_id>/member/<uuid:member_id>/add/', views.AddMemberToTeamView.as_view(), name='add-team-member'),
-    # path('<uuid:team_id>/member/<uuid:member_id>/remove/', views.RemoveMemberFromTeamView.as_view(), name='remove-team-member'),
+    path('project/<uuid:project_id>/', views.GetProjectTasksView.as_view(), name='tasks-for-project'),
+    path('<uuid:task_id>/', views.TaskDetailView.as_view(), name='task-detail'),
+    path('<uuid:task_id>/member/<uuid:member_id>/add/', views.AddMemberToTaskView.as_view(), name='add-task-member'),
+    path('<uuid:task_id>/member/<uuid:member_id>/remove/', views.RemoveMemberFromTaskView.as_view(), name='remove-task-member'),
+    path('<uuid:task_id>/toggle-completion-status/', views.ToggleCompletionStatusView.as_view(), name='toggle-completion-status'),
 ]
