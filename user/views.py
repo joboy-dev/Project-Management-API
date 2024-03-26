@@ -19,7 +19,6 @@ from rest_framework_simplejwt.views import TokenViewBase
 import jwt
 
 from . import serializers
-from project_management_api import permissions
 from .util import Util
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,7 +73,7 @@ class RegisterView(generics.GenericAPIView):
         )
  
         
-class VerifyEmailView(generics.GenericAPIView):
+class VerifyEmailView(APIView):
     '''View to verify email address'''
     
     def get(self, request):

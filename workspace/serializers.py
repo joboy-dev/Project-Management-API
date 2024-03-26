@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from user.serializers import UserDetailsSerializer
 from workspace.models import Member, Workspace
 
 User = get_user_model()
@@ -74,8 +75,11 @@ class WorkspaceDetailsSerializer(serializers.ModelSerializer):
 class MemberSerializer(serializers.ModelSerializer):
     '''Serializer to add a member to a workspace and also get all members in a workspace'''
     
-    workspace = serializers.StringRelatedField(read_only=True)
-    user = serializers.StringRelatedField(read_only=True)    
+    workspace = serializers.SerializerMethodField(read_only=True)
+    user = UserDetailsSerializer(read_only=True)  
+
+    def get_workspace(self, obj):
+        return obj.workspace.name
     
     class Meta:
         model = Member
@@ -114,13 +118,10 @@ class UpdateMemberSerializer(serializers.ModelSerializer):
     '''Serializer to update member role'''
     
     workspace = serializers.SerializerMethodField(read_only=True)
-    user = serializers.SerializerMethodField(read_only=True)
-    
+    user = UserDetailsSerializer(read_only=True)  
+
     def get_workspace(self, obj):
         return obj.workspace.name
-    
-    def get_user(self, obj):
-        return obj.user.email
     
     class Meta:
         model = Member

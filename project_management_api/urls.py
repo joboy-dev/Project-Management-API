@@ -35,17 +35,4 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-
-
-
-# schema_view = get_schema_view(
-#     title= 'Project Management API',
-#     version='1.0.0',
-#     description='API for project management application'
-# )
-
-# template_view = TemplateView.as_view(
-#     template_name="swagger-ui.html",
-#     extra_context={"schema_url": "openapi-schema"},
-# )
+    

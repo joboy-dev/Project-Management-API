@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 
+from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -56,7 +57,7 @@ class TeamDetailsView(generics.RetrieveUpdateDestroyAPIView):
             return Response({'error': 'Team does not exist'}, status=status.HTTP_404_NOT_FOUND)  
         
         
-class AddMemberToTeamView(generics.GenericAPIView):
+class AddMemberToTeamView(APIView):
     '''View to add a member to a team'''
     
     permission_classes = [IsAuthenticated, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
@@ -85,7 +86,7 @@ class AddMemberToTeamView(generics.GenericAPIView):
             return Response({'error': 'Team does not exist'}, status=status.HTTP_404_NOT_FOUND)
            
 
-class RemoveMemberFromTeamView(generics.GenericAPIView):
+class RemoveMemberFromTeamView(APIView):
     '''View to remove a member from a team'''
     
     permission_classes = [IsAuthenticated, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
