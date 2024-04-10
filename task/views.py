@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework import generics
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
@@ -113,7 +114,7 @@ class GetProjectTasksView(generics.ListAPIView):
             return Response({'error': 'There are no tasks for this project'}, status=status.HTTP_204_NO_CONTENT)
         
         
-class AddMemberToTaskView(generics.GenericAPIView):
+class AddMemberToTaskView(APIView):
     '''View to add a member to a task'''
     
     permission_classes = [IsAuthenticated, IsTaskWorkspaceOwnerOrEditorOrReadOnly]
@@ -138,8 +139,8 @@ class AddMemberToTaskView(generics.GenericAPIView):
         except Team.DoesNotExist:
             return Response({'error': 'Task does not exist'}, status=status.HTTP_404_NOT_FOUND)
     
-
-class RemoveMemberFromTaskView(generics.GenericAPIView):
+    
+class RemoveMemberFromTaskView(APIView):
     '''View to remive a member from a task'''
     
     permission_classes = [IsAuthenticated, IsTaskWorkspaceOwnerOrEditorOrReadOnly]
@@ -165,7 +166,7 @@ class RemoveMemberFromTaskView(generics.GenericAPIView):
             return Response({'error': 'Task does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
 
-class ToggleCompletionStatusView(generics.GenericAPIView):
+class ToggleCompletionStatusView(APIView):
     '''View to mark a task as complete'''
     
     permission_classes = [IsAuthenticated, IsTaskWorkspaceOwnerOrEditorOrReadOnly, IsMemberOrReadOnly]
