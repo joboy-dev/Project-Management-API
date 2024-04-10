@@ -66,11 +66,12 @@ class RegisterView(generics.GenericAPIView):
                 'error': 'An error occured. Try again later',
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        return Response({
-            'user': serializer.data,
-            'message': f"Account created successfully. Check {serializer.data['email']} for a verification link"},
-            status=status.HTTP_201_CREATED
-        )
+        # return Response({
+        #     'user': serializer.data,
+        #     'message': f"Account created successfully. Check {serializer.data['email']} for a verification link"},
+        #     status=status.HTTP_201_CREATED
+        # )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
  
         
 class VerifyEmailView(APIView):
@@ -87,24 +88,22 @@ class VerifyEmailView(APIView):
             user = User.objects.get(id=payload['user_id'])
                         
             if user.is_verified:
-                return Response({'error': 'You have been verified already'}, status=status.HTTP_400_BAD_REQUEST)
+                return render(request, 'email-verification-message.html', context={'type': 'email-verified-already'})
             else:
                 if user is not None:
                     user.is_verified = True
                     user.save()
-                    return Response({'message': 'Your email has been verified successfully'}, status=status.HTTP_200_OK)
+                    return render(request, 'email-verification-message.html', context={'type': 'success'})
                 else:
                     return Response({'error': 'This user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
                     
         except jwt.ExpiredSignatureError:
-            return Response({'error': 'This verification link is expired'}, status=status.HTTP_400_BAD_REQUEST)
+            return render(request, 'email-verification-message.html', context={'type': 'link-expired'})
         except jwt.exceptions.DecodeError:
-            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+            return render(request, 'email-verification-message.html', context={'type': 'invalid-token'})
         except Exception as e:
-            return Response({
-                'exception': f'{e}',
-                'error': 'An error occured. Try again later',
-            }, status=status.HTTP_400_BAD_REQUEST)
+            print(e)
+            return render(request, 'email-verification-message.html', context={'type': 'error'})
             
 
 class ResendVerificationEmailView(generics.GenericAPIView):

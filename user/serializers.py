@@ -71,7 +71,6 @@ class ResendEmailVerificationSerializer(serializers.Serializer):
         return data
         
     
-
 class LoginSerializer(serializers.Serializer):
 
     '''Serializer to log in a user.'''
