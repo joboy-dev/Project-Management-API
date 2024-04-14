@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
+from project_management_api.permissions import IsVerifiedOrNoAccess
 from workspace.models import Member, Workspace
 from workspace.permissions import IsWorkspaceOwnerOrEditorOrReadOnly
 
@@ -15,7 +16,7 @@ User = get_user_model()
 class CreateWorkspaceView(generics.CreateAPIView):
     '''View to create workspace'''
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
     serializer_class = serializers.CreateWorkspaceSerializer
     
     def perform_create(self, serializer):
@@ -27,7 +28,7 @@ class CreateWorkspaceView(generics.CreateAPIView):
 class WorkspaceDetailsView(generics.RetrieveUpdateDestroyAPIView):
     '''View to get, update and delete workspace details'''
     
-    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.WorkspaceDetailsSerializer
     
     def get(self, request, *args, **kwargs):        
@@ -61,7 +62,7 @@ class WorkspaceDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class AddMemberToWorkspaceView(generics.CreateAPIView):
     '''View to add a member to workspace'''
     
-    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.MemberSerializer
     
     def perform_create(self, serializer):
@@ -78,7 +79,7 @@ class AddMemberToWorkspaceView(generics.CreateAPIView):
 class RemoveMemberFromWorkspaceView(generics.GenericAPIView):
     '''View to remove member from workspace'''
     
-    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.MemberSerializer
     
     def post(self, request, workspace_id, user_id):
@@ -110,7 +111,7 @@ class RemoveMemberFromWorkspaceView(generics.GenericAPIView):
 class GetWorkspaceMembersView(generics.ListAPIView):
     '''View to view all workspace members'''
     
-    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.MemberSerializer
     
     def get_queryset(self):
@@ -136,7 +137,7 @@ class GetWorkspaceMembersView(generics.ListAPIView):
 class UpdateMemberRoleView(generics.UpdateAPIView):
     '''View to update workspace member role'''
     
-    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.UpdateMemberSerializer
     
     def get_object(self):

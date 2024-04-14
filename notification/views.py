@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from notification.models import Notification
+from project_management_api.permissions import IsVerifiedOrNoAccess
 from .permissions import IsNotificationOwner
 
 from . import serializers
@@ -16,7 +17,7 @@ class SendNotificatioView(generics.CreateAPIView):
     '''View to send a notification to another user'''
     
     serializer_class = serializers.NotificationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
     queryset = Notification.objects.all()
     
     def perform_create(self, serializer):
@@ -29,7 +30,7 @@ class GetAllNotificationsView(generics.ListAPIView):
     '''View to get all notifications for the current logged in user'''
     
     serializer_class = serializers.NotificationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
     
     def get_queryset(self):
         notifications = Notification.objects.filter(receiver=self.request.user)
@@ -48,7 +49,7 @@ class DeleteNotificationView(generics.DestroyAPIView):
     '''View to delete a notification'''
     
     serializer_class = serializers.NotificationSerializer
-    permission_classes = [IsAuthenticated, IsNotificationOwner]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsNotificationOwner]
     
     def get_object(self):
         notification = Notification.objects.get(id=self.kwargs['notification_id'])

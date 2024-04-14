@@ -1,4 +1,3 @@
-import smtplib
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -17,6 +16,8 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenViewBase
 import jwt
+
+from project_management_api.permissions import IsVerifiedOrNoAccess
 
 from . import serializers
 from .util import Util
@@ -148,7 +149,7 @@ class LoginView(generics.GenericAPIView):
 class UserDetailsView(generics.RetrieveUpdateAPIView):
     '''View to get, and update user account'''
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
     serializer_class = serializers.UserDetailsSerializer
     
     def get_object(self):
@@ -159,7 +160,7 @@ class ChangeEmailView(generics.UpdateAPIView):
     ''' View to change user email address'''
     
     serializer_class = serializers.ChangeEmailSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
 
     def get_object(self):
         return self.request.user
@@ -197,7 +198,7 @@ class ChangePasswordView(generics.UpdateAPIView):
     '''View to change user password'''
 
     serializer_class = serializers.ChangePasswordSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
 
     def get_object(self):
         return self.request.user
