@@ -18,11 +18,11 @@ from . import serializers
 
 User = get_user_model()
 
-class CreateGeneralProjectTaskView(generics.CreateAPIView):
+class CreateProjectTaskView(generics.CreateAPIView):
     '''View to create general project task'''
     
     permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTaskWorkspaceOwnerOrEditorOrReadOnly]
-    serializer_class = serializers.CreateGeneralProjectTaskSerializer
+    serializer_class = serializers.CreateProjectTaskSerializer
     queryset = Task.objects.all()
     
     

@@ -7,7 +7,7 @@ from team.models import Team
 from workspace.models import Member
 from workspace.serializers import MemberSerializer
 
-class CreateGeneralProjectTaskSerializer(serializers.ModelSerializer):
+class CreateProjectTaskSerializer(serializers.ModelSerializer):
     '''Serializer to create a non-team task'''
     
     members = MemberSerializer(read_only=True, many=True)
