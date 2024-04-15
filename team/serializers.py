@@ -19,7 +19,7 @@ class CreateTeamSerializer(serializers.ModelSerializer):
         name = validated_data.get('name')
         team_pic = validated_data.get('team_pic')
         project = Project.objects.get(id=self.context['view'].kwargs['project_id'])
-        member = Member.objects.filter(user=self.context['request'].user)
+        member = Member.objects.filter(user=self.context['request'].user, workspace=project.workspace)
 
         # check if member is in project members list
         if not project.members.contains(member.first()):

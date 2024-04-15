@@ -28,8 +28,8 @@ class CreateAccountSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'Your passwords do not match'})
         
         # validate subscription plan
-        if data['subscription_plan'] not in ['basic', 'premium', 'enterprise']:
-            raise serializers.ValidationError({'error': 'This subscription plan is not available. Choose between basic, premium, and enterprise'})
+        if data['subscription_plan'] not in ['starter', 'pro', 'ultimate']:
+            raise serializers.ValidationError({'error': 'This subscription plan is not available. Choose between starter, pro, and ultimate'})
         
         # check if email exists
         if User.objects.filter(email=data['email']).exists():

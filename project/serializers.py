@@ -61,12 +61,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         member = Member.objects.filter(user=self.context['request'].user, workspace=workspace)
         
         project = Project.objects.create(
-            name=name,
-            description=description,
-            label_color=label_color,
-            is_complete=False,
-            start_date=start_date,
-            end_date=end_date,
+            **validated_data,
             workspace=workspace,
             created_by=member.first()
         )

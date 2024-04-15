@@ -148,23 +148,20 @@ class GetProjectsInWorkspaceView(generics.ListAPIView):
 class ToggleCompletionStatusView(generics.GenericAPIView):
     '''View to mark a project as complete'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectWorkspaceOwnerOrReadOnly, IsMemberOrReadOnly]
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectWorkspaceOwnerOrReadOnly]
     
     def post(self, request, project_id):
         project = Project.objects.get(id=self.kwargs['project_id'])
-        member = Member.objects.get(user=request.user)
         self.check_object_permissions(request, obj=project)
         
         try:
-            if project.is_complete:    
-                project.is_complete = False
-                project.save()      
-                return Response({'message': 'Project marked as incomplete'}, status=status.HTTP_200_OK)
-            else:
-                project.is_complete = True
-                project.save()      
-                return Response({'message': 'Project marked as complete'}, status=status.HTTP_200_OK)
+            project.is_complete = not project.is_complete
+            project.save()
             
+            status_message = 'complete' if project.is_complete else 'incomplete'
+
+            return Response({'message': f'Project marked as {status_message}'}, status=status.HTTP_200_OK)
+
         except Project.DoesNotExist:
             return Response({'error': 'Project does not exist'}, status=status.HTTP_404_NOT_FOUND)
             

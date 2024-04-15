@@ -178,14 +178,13 @@ class ToggleCompletionStatusView(APIView):
         self.check_object_permissions(request, obj=task)
         
         try:
-            if task.is_complete:
-                task.is_complete = False
-                task.save()      
-                return Response({'message': 'Task marked as incomplete'}, status=status.HTTP_200_OK)
-            else:
-                task.is_complete = True
-                task.save()      
-                return Response({'message': 'Task marked as complete'}, status=status.HTTP_200_OK)
+            task.is_complete = not task.is_complete
+            task.save()
+            
+            status_message = 'complete ' if task.is_complete else 'incomplete'
+            
+            return Response({'message': f'Task marked as {status_message}'}, status=status.HTTP_200_OK)
+        
         except Task.DoesNotExist:
             return Response({'error': 'Task does not exist'}, status=status.HTTP_404_NOT_FOUND)
     

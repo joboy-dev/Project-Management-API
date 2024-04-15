@@ -39,7 +39,7 @@ def send_verification_email(request, email):
     
     data = {
         'subject': 'Verify your email address',
-        'body': f'Hi, {user.first_name}.\n\nClick the link below to verify your email address:\n{absolute_url}\n\nThe link expires after 5-15 minutes.',
+        'body': f'Hi, {user.first_name}.\n\nClick the link below to verify your email address:\n{absolute_url}\n\nThe link expires after 5-15 minutes.\n\nIf you did not request for this verification link, kindly ignore.\nThank you.',
         'email': user.email
     }
     

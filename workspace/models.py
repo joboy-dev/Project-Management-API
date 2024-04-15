@@ -7,11 +7,23 @@ User = get_user_model()
 class Workspace(models.Model):
     '''Workspace model'''
     
+    # Plans
+    BASIC = 'basic'
+    PREMIUM = 'premium'
+    ENTERPRISE = 'enterprise'
+    
+    plan_choices = [
+        (BASIC, 'Basic'),
+        (PREMIUM, 'Premium'),
+        (ENTERPRISE, 'Enterprise'),
+    ]
+    
     id = models.UUIDField(default=uuid4, primary_key=True)
     name = models.CharField(max_length=128, null=False, unique=True)
     company_email = models.EmailField(null=False, unique=True)
     no_of_members_allowed = models.IntegerField(null=False)
     current_no_of_members = models.IntegerField(null=False, default=0)
+    plan = models.CharField(choices=plan_choices, default=BASIC, null=False, max_length=10)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -32,7 +44,7 @@ class Member(models.Model):
     ]
     
     id = models.UUIDField(default=uuid4, primary_key=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
     role = models.CharField(choices=roles, default=VIEWER, max_length=6)
     date_joined = models.DateTimeField(auto_now_add=True)

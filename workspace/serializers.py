@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from notification.models import Notification
 from user.serializers import UserDetailsSerializer
 from workspace.models import Member, Workspace
 
@@ -13,16 +14,36 @@ class CreateWorkspaceSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Workspace
-        fields = ['id', 'name', 'company_email', 'no_of_members_allowed', 'creator']
+        fields = ['id', 'name', 'company_email', 'no_of_members_allowed', 'plan', 'creator']
         read_only_fields = ['id', 'creator']
         
     def validate(self, data):
+        user = self.context['request'].user
+        
         if Workspace.objects.filter(company_email=data['company_email']).exists():
             raise serializers.ValidationError({'error': 'This email is in use by another workspace'})
         
-        # check if workspace creator is already in another workspace
-        if Member.objects.filter(user=self.context['request'].user).exists():
-            raise serializers.ValidationError({'error': 'You are entitled to one workspace at a time.'})
+        if data['plan'] not in ['basic', 'premium', 'enterprise']:
+            raise serializers.ValidationError({'error': 'This workspace plan is not available. Choose between basic, premium, and enterprise'})
+        
+        # -----------------------------------------------------
+        # CHECK USER SUBSCRIPTION RESTRICTIONS
+        # -----------------------------------------------------
+        
+        # For starter plan for the user's subscription
+        if user.subscription_plan == 'starter':
+            if Member.objects.filter(user=user).exists():
+                raise serializers.ValidationError({'error': 'You are entitled to one workspace at a time. Upgrade your subscription to have access to more.'})
+        
+        # For pro plan for the user's subscription
+        if user.subscription_plan == 'pro':
+            if Member.objects.filter(user=user).count() == 3:
+                raise serializers.ValidationError({'error': 'You are entitled to only three workspaces. Upgrade your subscription to have access to more.'})
+        
+        # For ultimate plan for the user's subscription
+        if user.subscription_plan == 'ultimate':
+            if Member.objects.filter(user=user).count() == 7:
+                raise serializers.ValidationError({'error': 'You are entitled to seven workspaces.'})
         
         return data
         
@@ -85,6 +106,38 @@ class MemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = '__all__'
         read_only_fields = ['id', 'user', 'workspace', 'date_joined']
+        
+    def validate(self, data):
+        workspace_id = self.context['view'].kwargs['workspace_id']
+        user_id = self.context['view'].kwargs['user_id']
+        
+        workspace = Workspace.objects.get(id=workspace_id)
+        user = User.objects.get(id=user_id)
+        
+        # -----------------------------------------------------
+        # CHECK USER SUBSCRIPTION RESTRICTIONS
+        # -----------------------------------------------------
+        
+        # For starter plan for the user's subscription
+        if user.subscription_plan == 'starter':
+            if Member.objects.filter(user=user).exists():
+                raise serializers.ValidationError({'error': 'This user you want to add is entitled to one workspace at a time.'})
+        
+        # For pro plan for the user's subscription
+        if user.subscription_plan == 'pro':
+            if Member.objects.filter(user=user).count() == 3:
+                raise serializers.ValidationError({'error': 'This user you want to add is entitled to only three workspaces.'})
+        
+        # For ultimate plan for the user's subscription
+        if user.subscription_plan == 'ultimate':
+            if Member.objects.filter(user=user).count() == 7:
+                raise serializers.ValidationError({'error': 'This user you want to add is entitled to seven workspaces.'})
+        
+        # check if workspace is full
+        if workspace.current_no_of_members == workspace.no_of_members_allowed:
+            raise serializers.ValidationError({'error': 'The workspaace is full'})
+        
+        return data
             
     def create(self, validated_data):
         workspace_id = self.context['view'].kwargs['workspace_id']
@@ -94,24 +147,23 @@ class MemberSerializer(serializers.ModelSerializer):
         user = User.objects.get(id=user_id)
         role = validated_data.get('role')
         
-        # check if user you want to add is already in another workspace by checking if the user is already in the members object
-        if Member.objects.filter(user=user).exists():
-            raise serializers.ValidationError({'error': 'The user is already in a workspace'})
+        member = Member.objects.create(
+            workspace=workspace,
+            user=user,
+            role=role,
+        )
         
-        # check if workspace is full
-        if workspace.current_no_of_members < workspace.no_of_members_allowed:
-            member = Member.objects.create(
-                workspace=workspace,
-                user=user,
-                role=role,
-            )
-            
-            workspace.current_no_of_members += 1
-            workspace.save()
-            
-            return member
-        else:
-            raise serializers.ValidationError({'error': 'The workspaace is full'})
+        workspace.current_no_of_members += 1
+        workspace.save()
+        
+        # Send notification
+        Notification.objects.create(
+            message=f'You have been added to workspace {workspace.name}',
+            sender=self.context['request'].user,  # current user
+            receiver=user,  # user referenced in url with id
+        )
+        
+        return member
     
     
 class UpdateMemberSerializer(serializers.ModelSerializer):

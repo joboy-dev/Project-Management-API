@@ -17,14 +17,14 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return os.path.join('user', str(model.id), f'user_pic.{extension}')
     
     # Subscription
-    BASIC = 'basic'
-    PREMIUM = 'premium'
-    ENTERPRISE = 'enterprise'
+    STARTER = 'starter'
+    PRO = 'pro'
+    ULTIMATE = 'ultimate'
     
     subscription_choices = [
-        (BASIC, 'Basic'),
-        (PREMIUM, 'Premium'),
-        (ENTERPRISE, 'Enterprise'),
+        (STARTER, 'Starter'),
+        (PRO, 'Pro'),
+        (ULTIMATE, 'Ultimate'),
     ]
 
     id = models.UUIDField(default=uuid4, primary_key=True)
@@ -34,7 +34,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     profile_pic = models.ImageField(default='user/default.png', upload_to=upload_image, null=True)
     phone_number = models.CharField(max_length=11, null=False)
     is_verified = models.BooleanField(default=False)
-    subscription_plan = models.CharField(choices=subscription_choices, default=BASIC, null=False, max_length=10)
+    subscription_plan = models.CharField(choices=subscription_choices, default=STARTER, null=False, max_length=10)
     
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)

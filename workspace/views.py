@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
+from notification.models import Notification
 from project_management_api.permissions import IsVerifiedOrNoAccess
 from workspace.models import Member, Workspace
 from workspace.permissions import IsWorkspaceOwnerOrEditorOrReadOnly
@@ -102,6 +103,12 @@ class RemoveMemberFromWorkspaceView(generics.GenericAPIView):
                 workspace.current_no_of_members -= 1
                 workspace.save()
                 
+                Notification.objects.create(
+                    message=f'You have been removed from workspace {workspace.name}',
+                    sender=request.user,  # current user
+                    receiver=user,  # user referenced in url with id
+                )
+                
                 return Response({'message': f'Member {member.user.email} has been removed'})
             
             except Member.DoesNotExist:
@@ -152,5 +159,15 @@ class UpdateMemberRoleView(generics.UpdateAPIView):
     def perform_update(self, serializer):
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        
+        user = User.objects.get(id=self.kwargs['user_id'])
+        workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
+        member = Member.objects.get(user=user, workspace=workspace)
+        Notification.objects.create(
+            message=f'Youur role has been updated in {workspace.name}. You are now a/an {member.role}.',
+            sender=self.request.user,  # current user
+            receiver=user,  # user referenced in url with id
+        )
+        
         return Response(serializer.data, status=status.HTTP_200_OK)
     

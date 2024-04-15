@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime as dt
 from django.db import models
 from uuid import uuid4
 from user.models import CustomUser
@@ -13,7 +13,7 @@ class Project(models.Model):
     description = models.CharField(null=False, max_length=255)
     label_color = models.CharField(max_length=25, null=False, default='0xFFFFFFFF')
     is_complete = models.BooleanField(default=False)
-    start_date = models.DateTimeField(null=False, default=datetime.datetime.now())
+    start_date = models.DateTimeField(null=False, default=dt.now())
     end_date = models.DateTimeField(null=True)
     workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE, null=True)
     members = models.ManyToManyField(Member, related_name='projects', blank=True)
