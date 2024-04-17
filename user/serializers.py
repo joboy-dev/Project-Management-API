@@ -118,8 +118,8 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'profile_pic', 'phone_number', 'is_verified']
-        read_only_fields = ['id', 'is_verified', 'email']        
+        fields = ['id', 'first_name', 'last_name', 'email', 'profile_pic', 'phone_number', 'is_verified', 'subscription_plan']
+        read_only_fields = ['id', 'is_verified', 'email', 'subscription_plan']        
     
     def update(self, instance, validated_data):
         '''Update details function'''
@@ -194,8 +194,10 @@ class UpdateSubscriptionPlanSerializer(serializers.ModelSerializer):
         
     def validate(self, data):
          # validate subscription plan
-        if data['subscription_plan'] not in ['basic', 'premium', 'enterprise']:
-            raise serializers.ValidationError({'error': 'This subscription plan is not available. Choose between basic, premium, and enterprise'})
+        if data['subscription_plan'] not in ['starter', 'pro', 'ultimate']:
+            raise serializers.ValidationError({'error': 'This subscription plan is not available. Choose between starter, pro, and ultimate'})
+        
+        return data
     
     def update(self, instance, validated_data):
         
@@ -235,7 +237,7 @@ class RefreshAccessSerializer(serializers.Serializer):
         refresh_token = RefreshToken(data['refresh'])
         refresh_token.verify()
         
-        refresh_token.blacklist()
+        # refresh_token.blacklist()
         
         refresh_token.set_exp()
         refresh_token.set_iat()

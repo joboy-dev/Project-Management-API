@@ -2,6 +2,8 @@ from django.contrib import admin
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+
+from user.models import BlacklistedToken
 from .forms import UserChangeForm, UserCreationForm
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
@@ -32,3 +34,4 @@ class UserAdmin(UserAdmin):
     filter_horizontal = ('groups', 'user_permissions',)
 
 admin.site.register(User, UserAdmin)
+admin.site.register(BlacklistedToken)

@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     
     'corsheaders',
     'rest_framework',
-    'rest_framework_simplejwt.token_blacklist',
+    # 'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
     
     # APPS
@@ -143,8 +143,9 @@ AUTH_USER_MODEL = 'user.CustomUser'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        'user.auth.BlacklistTokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
+    ]
 }
 
 SIMPLE_JWT = {

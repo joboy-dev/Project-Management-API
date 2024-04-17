@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -10,7 +11,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -18,6 +19,7 @@ from rest_framework_simplejwt.views import TokenViewBase
 import jwt
 
 from project_management_api.permissions import IsVerifiedOrNoAccess
+from user.models import BlacklistedToken
 
 from . import serializers
 from .util import Util
@@ -51,6 +53,7 @@ class RegisterView(generics.GenericAPIView):
 
     serializer_class = serializers.CreateAccountSerializer
     parser_classes = [MultiPartParser]
+    permission_classes = [AllowAny]
     queryset = User.objects.all()
     
     def post(self, request):
@@ -139,6 +142,7 @@ class LoginView(generics.GenericAPIView):
     '''View to login users'''
     
     serializer_class = serializers.LoginSerializer
+    authentication_classes = []
     
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -206,17 +210,34 @@ class ChangePasswordView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)
         return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
+    
+
+class UpdateSubscriptionView(generics.UpdateAPIView):
+    '''View to update a user's subscription'''
+    
+    serializer_class = serializers.UpdateSubscriptionPlanSerializer
+    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
+    
+    def get_object(self):
+        return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        return Response({'message': 'Subscription plan updated successfully.'}, status=status.HTTP_200_OK)
 
 
-class LogoutView(generics.GenericAPIView):
+class LogoutView(APIView):
     ''' View to logout users'''
     
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.LogoutSerializer
     
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        # Add token to blacklisted tokens
+        BlacklistedToken.objects.create(
+            user=request.user,
+            token=request.headers.get('Authorization').split(' ')[1],
+            expiration_date=datetime.now() + timedelta(minutes=10)
+        )
         return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
         
 

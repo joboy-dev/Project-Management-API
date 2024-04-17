@@ -11,6 +11,7 @@ urlpatterns = [
     path('account/details/', views.UserDetailsView.as_view(), name='user-details'),
     path('account/email/change/', views.ChangeEmailView.as_view(), name='change-email'),
     path('account/password/change/', views.ChangePasswordView.as_view(), name='change-password'),
+    path('account/subscription/update/', views.UpdateSubscriptionView.as_view(), name='update-subscription'),
     path('account/logout/', views.LogoutView.as_view(), name='logout'),
     path('account/token/refresh/', views.RefreshTokenView.as_view(), name='refresh-token'),
 ]

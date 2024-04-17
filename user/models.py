@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import os
 
 from django.db import models
@@ -50,4 +51,22 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class BlacklistedToken(models.Model):
+    '''A model to store blacklisted tokens'''
     
+    token = models.CharField(max_length=500)
+    user = models.ForeignKey(CustomUser, related_name="token_user", on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now=True)
+    expiration_date = models.DateTimeField()
+
+    def is_expired(self):
+        return self.expiration_date.replace(tzinfo=None) < datetime.now().replace(tzinfo=None)
+    
+    def __str__(self):
+        return f'{self.user.email}'
+
+    class Meta:
+        unique_together = ("token", "user")
+        

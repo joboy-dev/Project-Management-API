@@ -11,6 +11,10 @@ class CreateProjectTaskSerializer(serializers.ModelSerializer):
     '''Serializer to create a non-team task'''
     
     members = MemberSerializer(read_only=True, many=True)
+    created_by = serializers.SerializerMethodField(read_only=True)
+    
+    def get_created_by(self, obj):
+        return obj.id
         
     class Meta:
         model = Task
@@ -79,6 +83,10 @@ class CreateTeamTaskSerializer(serializers.ModelSerializer):
     '''Serializer to create a team task'''
     
     members = MemberSerializer(read_only=True, many=True)
+    created_by = serializers.SerializerMethodField(read_only=True)
+    
+    def get_created_by(self, obj):
+        return obj.id
     
     class Meta:
         model = Task
