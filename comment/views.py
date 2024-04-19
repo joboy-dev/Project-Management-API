@@ -7,9 +7,7 @@ from rest_framework import status
 
 from comment.models import Comment, CommentReply
 from project.models import Project
-from project_management_api.permissions import IsVerifiedOrNoAccess
-from workspace.models import Member, Workspace
-from .permissions import IsProjectMemberComment, IsProjectMemberCommentReply
+from .permissions import IsProjectMemberComment, IsCommentOwner
 
 from . import serializers
 
@@ -19,7 +17,7 @@ class CreateCommentView(generics.CreateAPIView):
     '''View to create a comment'''
     
     serializer_class = serializers.CommentSerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectMemberComment]
+    permission_classes = [IsAuthenticated, IsProjectMemberComment]
     
     def perform_create(self, serializer):
         serializer.is_valid(raise_exception=True)
@@ -31,7 +29,7 @@ class CommentDetailsView(generics.RetrieveUpdateDestroyAPIView):
     '''View to get, update and delete a comment'''
     
     serializer_class = serializers.CommentDetailsSerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectMemberComment]
+    permission_classes = [IsAuthenticated, IsCommentOwner]
     
     def get(self, request, *args, **kwargs):
         try:
@@ -86,7 +84,7 @@ class CreateCommentReplyView(generics.CreateAPIView):
     '''View to create reply to a comment'''
     
     serializer_class = serializers.CommentReplySerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectMemberCommentReply]
+    permission_classes = [IsAuthenticated, IsProjectMemberComment]
     
     def perform_create(self, serializer):
         serializer.is_valid(raise_exception=True)
@@ -99,7 +97,7 @@ class CommentReplyDetailsView(generics.RetrieveUpdateDestroyAPIView):
     '''View to get, update and delete a comment reply'''
     
     serializer_class = serializers.CommentReplyDetailsSerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectMemberCommentReply]
+    permission_classes = [IsAuthenticated, IsCommentOwner]
     
     def get(self, request, *args, **kwargs):
         try:

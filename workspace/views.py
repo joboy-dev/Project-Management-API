@@ -83,21 +83,20 @@ class RemoveMemberFromWorkspaceView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.MemberSerializer
     
-    def post(self, request, workspace_id, user_id):
-        workspace_id = self.kwargs['workspace_id']
-        user_id = self.kwargs['user_id']
+    def post(self, request, workspace_id, member_id):
+        # workspace_id = self.kwargs['workspace_id']
+        # member_id = self.kwargs['member_id']
         
         workspace = Workspace.objects.get(id=workspace_id)
-        user = User.objects.get(id=user_id)
+        member = Member.objects.get(id=member_id, workspace=workspace)
         
         self.check_object_permissions(request, obj=workspace)
         
-        if user == request.user:
+        if member.user == request.user:
             return Response({'error': 'You cannot remove yourself from the workspace'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             try:
                 # get member to delete based on the workspace and user objects
-                member = Member.objects.get(workspace=workspace, user=user)
                 member.delete()
                 
                 workspace.current_no_of_members -= 1
@@ -106,7 +105,7 @@ class RemoveMemberFromWorkspaceView(generics.GenericAPIView):
                 Notification.objects.create(
                     message=f'You have been removed from workspace {workspace.name}',
                     sender=request.user,  # current user
-                    receiver=user,  # user referenced in url with id
+                    receiver=member.user,  # user referenced in url with id
                 )
                 
                 return Response({'message': f'Member {member.user.email} has been removed'})
@@ -148,10 +147,9 @@ class UpdateMemberRoleView(generics.UpdateAPIView):
     serializer_class = serializers.UpdateMemberSerializer
     
     def get_object(self):
-        user = User.objects.get(id=self.kwargs['user_id'])
         workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
         
-        member = Member.objects.get(user=user, workspace=workspace)
+        member = Member.objects.get(id=self.kwargs['member_id'], workspace=workspace)
         
         self.check_object_permissions(self.request, obj=workspace)
         return member
@@ -160,14 +158,17 @@ class UpdateMemberRoleView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        user = User.objects.get(id=self.kwargs['user_id'])
-        workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
-        member = Member.objects.get(user=user, workspace=workspace)
-        Notification.objects.create(
-            message=f'Youur role has been updated in {workspace.name}. You are now a/an {member.role}.',
-            sender=self.request.user,  # current user
-            receiver=user,  # user referenced in url with id
-        )
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
+            member = Member.objects.get(id=self.kwargs['member_id'], workspace=workspace)
+            Notification.objects.create(
+                message=f'Youur role has been updated in {workspace.name}. You are now a/an {member.role}.',
+                sender=self.request.user,  # current user
+                receiver=member.user,  # user referenced in url with id
+            )
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Member.DoesNotExist:
+            return Response({'error': 'Member does not exist in workspace'}, status=status.HTTP_404_NOT_FOUND)
+            
     

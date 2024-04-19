@@ -80,6 +80,8 @@ class RegisterView(generics.GenericAPIView):
 class VerifyEmailView(APIView):
     '''View to verify email address'''
     
+    authentication_classes = []
+    
     def get(self, request):
         # get token from url parameters
         token = request.GET['token']
@@ -113,6 +115,8 @@ class ResendVerificationEmailView(generics.GenericAPIView):
     '''View to resend verification email'''
     
     serializer_class = serializers.ResendEmailVerificationSerializer
+    permission_classes = []
+    authentication_classes = []
     
     def post(self, request):
         serializer = self.serializer_class(data=request.data)

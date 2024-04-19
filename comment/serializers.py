@@ -16,11 +16,13 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'project', 'commenter']
     
     def create(self, validated_data):
+        project = Project.objects.get(id=self.context['view'].kwargs['project_id'])
+        member = Member.objects.get(user=self.context['request'].user, workspace=project.workspace)
         # Create comment
         comment = Comment.objects.create(
             comment=validated_data.get('comment'),
-            project=Project.objects.get(id=self.context['view'].kwargs['project_id']),
-            commenter=Member.objects.get(user=self.context['request'].user)
+            project=project,
+            commenter=member
         )
         
         return comment
@@ -55,12 +57,18 @@ class CommentReplySerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'comment', 'commenter']
     
     def create(self, validated_data):
-        # Create comment
-        reply = Comment.objects.create(
-            reply=validated_data.get('reply'),
-            comment=Comment.objects.get(id=self.context['view'].kwargs['comment_id']),
-            commenter=Member.objects.get(user=self.context['request'].user)
-        )
+        comment = Comment.objects.get(id=self.context['view'].kwargs['comment_id'])
+        member = Member.objects.get(user=self.context['request'].user, workspace=comment.project.workspace)
+        
+        try:
+            # Create comment
+            reply = CommentReply.objects.create(
+                reply=validated_data.get('reply'),
+                comment=comment,
+                commenter=member
+            )
+        except Member.DoesNotExist:
+            raise serializers.ValidationError('Member does not exist in this workspace')
         
         return reply
  

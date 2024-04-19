@@ -181,10 +181,10 @@ class UpdateMemberSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'workspace', 'date_joined']
         
     def validate(self, data):
-        user_id = self.context['view'].kwargs['user_id']
-        user = User.objects.get(id=user_id)
+        member = self.context['view'].kwargs['member_id']
+        member = Member.objects.get(id=member)
         
-        if user == self.context['request'].user:
+        if member.user == self.context['request'].user:
             raise serializers.ValidationError({'error': 'You cannot edit your own role'})
         
         return data

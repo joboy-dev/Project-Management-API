@@ -1,26 +1,32 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
+from comment.models import CommentReply
 from workspace.models import Member
 
 class IsProjectMemberComment(BasePermission):     
-    '''Permission to check if a user is a member of a project. This is used for the comment model'''
+    '''Permission to check if a user is a member of a project'''
     
     message = 'You are not a member of this project'
     
     def has_object_permission(self, request, view, obj):
-        # get member based on current logged in user
-        member = Member.objects.get(user=request.user)
         # check if member is in project members
-        return obj.project.members.contains(member)
+        comment_obj = obj
+        if isinstance(obj, CommentReply):
+            comment_obj = obj.comment
+            
+        # get member based on current logged in user
+        member = Member.objects.get(user=request.user, workspace=comment_obj.project.workspace)
+        
+        return comment_obj.project.members.contains(member)
     
+
+class IsCommentOwner(BasePermission):
+    '''Permission to check if the current logged in user is the owner of the comment'''
     
-class IsProjectMemberCommentReply(BasePermission):     
-    '''Permission to check if a user is a member of a project. This is used for the comment reply model'''
-    
-    message = 'You are not a member of this project'
+    message = 'You are not the owner of this comment so you cannot make changes to it.'
     
     def has_object_permission(self, request, view, obj):
-        # get member based on current logged in user
-        member = Member.objects.get(user=request.user)
-        # check if member is in project members
-        return obj.comment.project.members.contains(member)
+        if request.method in SAFE_METHODS:
+            return True
+        
+        return request.user == obj.commenter.user

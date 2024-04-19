@@ -46,7 +46,7 @@ class Member(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
-    role = models.CharField(choices=roles, default=VIEWER, max_length=6)
+    role = models.CharField(choices=roles, default=VIEWER, max_length=6, null=False)
     date_joined = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

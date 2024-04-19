@@ -185,7 +185,7 @@ class ToggleCompletionStatusView(APIView):
             task.is_complete = not task.is_complete
             task.save()
             
-            status_message = 'complete ' if task.is_complete else 'incomplete'
+            status_message = 'complete' if task.is_complete else 'incomplete'
             
             return Response({'message': f'Task marked as {status_message}'}, status=status.HTTP_200_OK)
         
