@@ -12,7 +12,7 @@ This robust API can be utilized with any platform, be it web or mobile platforms
 * Users can send notifications to other users.
 
 ## Documentation
-The postman documentation can be found (here)[https://documenter.getpostman.com/view/25448393/2sA3Bj9EAx#f8a7683b-b159-4a24-ad98-98263e9f38cf]
+The postman documentation can be found [here](https://documenter.getpostman.com/view/25448393/2sA3Bj9EAx#f8a7683b-b159-4a24-ad98-98263e9f38cf)
 
 ## Set up on local machine
 1. Clone the project by using the command in the terminal: `git clone https://github.com/joboy-dev/Project-Management-API.git`
