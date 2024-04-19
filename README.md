@@ -18,18 +18,16 @@ The postman documentation can be found [here](https://documenter.getpostman.com/
 1. Clone the project by using the command in the terminal: `git clone https://github.com/joboy-dev/Project-Management-API.git`
 2. Run the following commands:
     #### Windows
-    * *`pip install -r requirements.txt` to get the necessary dependencies
-    * *`py manage.py makemigrations` to have a database file
-    * *`py manage.py migrate`
-    * *`py manage.py collectstatic` which is essential for the ckeditor5 used in the project for creating and editing a project.
-    * *`py manage.py runserver` to start up the develeopment server
+    * `pip install -r requirements.txt` to get the necessary dependencies
+    * `py manage.py makemigrations` to have a database file
+    * `py manage.py migrate`
+    * `py manage.py runserver` to start up the develeopment server
 
     #### macOS/Linux
-    * *`pip install -r requirements.txt` to get the necessary dependencies
-    * *`python3 manage.py makemigrations` to have a database file
-    * *`python3 manage.py migrate`
-    * *`python3 manage.py collectstatic` which is essential for the ckeditor5 used in the project for creating and editing a project.
-    * *`python3 manage.py runserver` to start up the develeopment server
+    * `pip install -r requirements.txt` to get the necessary dependencies
+    * `python3 manage.py makemigrations` to have a database file
+    * `python3 manage.py migrate`
+    * `python3 manage.py runserver` to start up the develeopment server
 3. Create a `.env` file in the root directory of the project and add a `SECRET_KEY` variable:
     `SECRET_KEY = 'random characters'`
 4. Create a `media` folder in the root directory of the project as well.
@@ -38,24 +36,24 @@ The postman documentation can be found [here](https://documenter.getpostman.com/
 You can create a virtual environment before running the commands in number 2.
 
 #### Creating the Virtual Environment
-* *Open your terminal or command prompt.
-* *Navigate to the directory where you want to create your virtual environment.
-* *Execute the following command:
+* Open your terminal or command prompt.
+* Navigate to the directory where you want to create your virtual environment.
+* Execute the following command:
     `python -m venv /path/to/new/virtual/environment`
-* *Replace /path/to/new/virtual/environment with the desired location for your virtual environment. For example:
+* Replace /path/to/new/virtual/environment with the desired location for your virtual environment. For example:
     `python -m venv .venv`
-* *This will create a virtual environment in the current directory.
-* *On Windows, you can also use the following command:
+* This will create a virtual environment in the current directory.
+* On Windows, you can also use the following command:
     `python -m venv c:\path\to\myenv`
 
 Just do `python-m venv venv` to put the virtual environment in the project root directory
 
 #### Activate the Virtual Environment
 After creating the virtual environment, activate it:
-* *On Windows:
+* On Windows:
     `.venv\Scripts\activate`
 
-* *On macOS/Linux:
+* On macOS/Linux:
     `source .venv/bin/activate`
 
 #### Deactivate the Virtual Environment
