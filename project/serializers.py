@@ -36,6 +36,22 @@ class ProjectSerializer(serializers.ModelSerializer):
         
         # filter member object so that members from outside the workspace cannot be added
         member = Member.objects.filter(user=self.context['request'].user, workspace=workspace)
+        
+        # --------------------------------------------------
+        # WORKSPACE SUBSCRIPTION PLAN RESTRICTION CHECKS
+        # --------------------------------------------------
+        
+        if workspace.plan == 'basic':
+            if Project.objects.filter(workspace=workspace).count() == 3:
+                raise serializers.ValidationError({'error': 'This workspace is allowed only 3 projects. Upgrade to have access to more projects.'})
+            
+        if workspace.plan == 'premium':
+            if Project.objects.filter(workspace=workspace).count() == 7:
+                raise serializers.ValidationError({'error': 'This workspace is allowed only 7 projects. Upgrade to have access to more projects.'})
+            
+        if workspace.plan == 'enterprise':
+            if Project.objects.filter(workspace=workspace).count() == 15:
+                raise serializers.ValidationError({'error': 'This workspace is allowed 15 projects.'}) 
        
         # check if user belongs in workspace
         if not member.exists():
@@ -48,12 +64,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        name = validated_data.get('name')
-        description = validated_data.get('description')
-        start_date = validated_data.get('start_date')
-        end_date = validated_data.get('end_date')
-        label_color = validated_data.get('label_color')
-        
         workspace_id = self.context['view'].kwargs['workspace_id']
         workspace = Workspace.objects.get(id=workspace_id)
         

@@ -120,22 +120,25 @@ class AddMemberToTaskView(APIView):
     
     def post(self, request, task_id, member_id):
         task = Task.objects.get(id=self.kwargs['task_id'])
-        member = Member.objects.filter(id=self.kwargs['member_id'], workspace=task.project.workspace)
+        members = Member.objects.filter(id=self.kwargs['member_id'], workspace=task.project.workspace)
         self.check_object_permissions(request, obj=task)
+        member = members.first()
         
+        if not members.exists():
+            return Response({'error': 'Member does not exist in this workspace'}, status=status.HTTP_404_NOT_FOUND)
+            
         try:
-            if member in task.members.all():
-                return Response({'error': 'Member is already a part of the task'})
-            
-            task.members.add(member)
-            task.save()
-            
-            return Response({'message': f'Member {member.user.email} added to task'})
-            
+            if task.members.contains(member):
+                return Response({'error': 'This member already exists in this task'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                task.members.add(member)
+                task.save()
+                return Response({'message': f'Member {member.user.email} added to task'}, status=status.HTTP_404_NOT_FOUND)
+                
         except Member.DoesNotExist:
             return Response({'error': 'Member does not exist in this task'}, status=status.HTTP_404_NOT_FOUND)
             
-        except Team.DoesNotExist:
+        except Task.DoesNotExist:
             return Response({'error': 'Task does not exist'}, status=status.HTTP_404_NOT_FOUND)
     
     
@@ -148,31 +151,34 @@ class RemoveMemberFromTaskView(APIView):
         task = Task.objects.get(id=self.kwargs['task_id'])
         members = Member.objects.filter(id=self.kwargs['member_id'], workspace=task.project.workspace)
         self.check_object_permissions(request, obj=task)
+        member = members.first()
         
+        if not members.exists():
+            return Response({'error': 'Member does not exist in this workspace'}, status=status.HTTP_404_NOT_FOUND)
+            
         try:
-            if not task.members.contains(members.first()):
+            if not task.members.contains(member):
                 return Response({'error': 'Member is not a part of the task'})
             
-            task.members.remove(members.first())
+            task.members.remove(member)
             task.save()
             
-            return Response({'message': f'Member {members.first().user.email} removed from task'})
+            return Response({'message': f'Member {member.user.email} removed from task'})
             
         except Member.DoesNotExist:
             return Response({'error': 'Member does not exist in this task'}, status=status.HTTP_404_NOT_FOUND)
             
-        except Team.DoesNotExist:
+        except Task.DoesNotExist:
             return Response({'error': 'Task does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
 
 class ToggleCompletionStatusView(APIView):
     '''View to mark a task as complete'''
     
-    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly, IsMemberOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, task_id):
         task = Task.objects.get(id=self.kwargs['task_id'])
-        member = Member.objects.get(user=request.user)
         self.check_object_permissions(request, obj=task)
         
         try:
