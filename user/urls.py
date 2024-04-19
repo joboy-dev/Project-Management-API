@@ -14,4 +14,5 @@ urlpatterns = [
     path('account/subscription/update/', views.UpdateSubscriptionView.as_view(), name='update-subscription'),
     path('account/logout/', views.LogoutView.as_view(), name='logout'),
     path('account/token/refresh/', views.RefreshTokenView.as_view(), name='refresh-token'),
+    path('account/delete/', views.DeleteAccountView.as_view(), name='delete-account'),
 ]

@@ -18,7 +18,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenViewBase
 import jwt
 
-from project_management_api.permissions import IsVerifiedOrNoAccess
 from user.models import BlacklistedToken
 
 from . import serializers
@@ -142,6 +141,7 @@ class LoginView(generics.GenericAPIView):
     '''View to login users'''
     
     serializer_class = serializers.LoginSerializer
+    permission_classes = []
     authentication_classes = []
     
     def post(self, request):
@@ -153,7 +153,7 @@ class LoginView(generics.GenericAPIView):
 class UserDetailsView(generics.RetrieveUpdateAPIView):
     '''View to get, and update user account'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
+    permission_classes = [IsAuthenticated]
     serializer_class = serializers.UserDetailsSerializer
     
     def get_object(self):
@@ -164,7 +164,7 @@ class ChangeEmailView(generics.UpdateAPIView):
     ''' View to change user email address'''
     
     serializer_class = serializers.ChangeEmailSerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
@@ -202,7 +202,7 @@ class ChangePasswordView(generics.UpdateAPIView):
     '''View to change user password'''
 
     serializer_class = serializers.ChangePasswordSerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
@@ -216,7 +216,7 @@ class UpdateSubscriptionView(generics.UpdateAPIView):
     '''View to update a user's subscription'''
     
     serializer_class = serializers.UpdateSubscriptionPlanSerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
+    permission_classes = [IsAuthenticated]
     
     def get_object(self):
         return self.request.user
@@ -224,7 +224,7 @@ class UpdateSubscriptionView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)
         return Response({'message': 'Subscription plan updated successfully.'}, status=status.HTTP_200_OK)
-
+    
 
 class LogoutView(APIView):
     ''' View to logout users'''
@@ -242,6 +242,19 @@ class LogoutView(APIView):
         
 
 class RefreshTokenView(TokenViewBase):
-    '''View to refresh token'''
+    '''View to refresh access token'''
     
     serializer_class = serializers.RefreshAccessSerializer
+    
+
+class DeleteAccountView(APIView):
+    '''View to delete a user's sccount. This will just make the user's account inactive.'''
+    
+    permission_classes = [IsAuthenticated]
+    
+    def delete(self, request):
+        user = request.user
+        user.is_active = False
+        
+        user.save()
+        return Response({'message': 'Account deleted successfully'}, status=status.HTTP_200_OK)

@@ -6,10 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from project.models import Project
-from project_management_api.permissions import IsVerifiedOrNoAccess
 from workspace.models import Member, Workspace
-from .permissions import IsProjectWorkspaceOwnerOrReadOnly, IsProjectMemberOrReadOnly
-from workspace.permissions import IsMemberOrReadOnly
+from workspace.permissions import IsMemberOrReadOnly, IsWorkspaceOwnerOrEditorOrReadOnly
 
 from . import serializers
 
@@ -19,7 +17,7 @@ class CreateProjectView(generics.CreateAPIView):
     '''View to list and create projects'''
     
     serializer_class = serializers.ProjectSerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectWorkspaceOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     queryset = Project.objects.all()
     
     def perform_create(self, serializer):
@@ -32,7 +30,7 @@ class ProjectDetailsView(generics.RetrieveUpdateDestroyAPIView):
     '''View to get, update, and delete project'''
     
     serializer_class = serializers.ProjectDetailsSerializer
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectWorkspaceOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def get(self, request, *args, **kwargs):
         try:
@@ -64,7 +62,7 @@ class ProjectDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class AddMemberToProjectView(generics.GenericAPIView):
     '''View to add a member to a project'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectWorkspaceOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, project_id, member_id):
         project = Project.objects.get(id=self.kwargs['project_id'])
@@ -96,7 +94,7 @@ class AddMemberToProjectView(generics.GenericAPIView):
 class RemoveMemberFromProjectView(generics.GenericAPIView):
     '''View to remove a member from a project'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectWorkspaceOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, project_id, member_id):
         project = Project.objects.get(id=self.kwargs['project_id'])
@@ -148,7 +146,7 @@ class GetProjectsInWorkspaceView(generics.ListAPIView):
 class ToggleCompletionStatusView(generics.GenericAPIView):
     '''View to mark a project as complete'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsProjectWorkspaceOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, project_id):
         project = Project.objects.get(id=self.kwargs['project_id'])

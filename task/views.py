@@ -7,11 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from project.models import Project
-from project_management_api.permissions import IsVerifiedOrNoAccess
 from task.models import Task
 from team.models import Team
-from workspace.permissions import IsMemberOrReadOnly
-from .permissions import IsTaskWorkspaceOwnerOrEditorOrReadOnly, IsTaskMemberOrReadOnly
+from workspace.permissions import IsMemberOrReadOnly, IsWorkspaceOwnerOrEditorOrReadOnly
 from workspace.models import Member
 
 from . import serializers
@@ -21,7 +19,7 @@ User = get_user_model()
 class CreateProjectTaskView(generics.CreateAPIView):
     '''View to create general project task'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTaskWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.CreateProjectTaskSerializer
     queryset = Task.objects.all()
     
@@ -29,7 +27,7 @@ class CreateProjectTaskView(generics.CreateAPIView):
 class CreateTeamTaskView(generics.CreateAPIView):
     '''View to create task-specific project task'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTaskWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.CreateTeamTaskSerializer
     queryset = Task.objects.all()
 
@@ -37,7 +35,7 @@ class CreateTeamTaskView(generics.CreateAPIView):
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     '''View to get, update and delete tasks'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTaskWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.TaskDetailSerializer
     
     def get(self, request, *args, **kwargs):
@@ -70,7 +68,7 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
 class GetTasksForTeamView(generics.ListAPIView):
     '''View to get tasks for a specific team'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
+    permission_classes = [IsAuthenticated]
     serializer_class = serializers.TaskDetailSerializer
     
     def get_queryset(self):
@@ -94,7 +92,7 @@ class GetTasksForTeamView(generics.ListAPIView):
 class GetProjectTasksView(generics.ListAPIView):
     '''View to get tasks for a project'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
+    permission_classes = [IsAuthenticated]
     serializer_class = serializers.TaskDetailSerializer
     
     def get_queryset(self):
@@ -118,21 +116,21 @@ class GetProjectTasksView(generics.ListAPIView):
 class AddMemberToTaskView(APIView):
     '''View to add a member to a task'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTaskWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, task_id, member_id):
         task = Task.objects.get(id=self.kwargs['task_id'])
-        members = Member.objects.filter(id=self.kwargs['member_id'], workspace=task.project.workspace)
+        member = Member.objects.filter(id=self.kwargs['member_id'], workspace=task.project.workspace)
         self.check_object_permissions(request, obj=task)
         
         try:
-            if task.members.contains(members.first()):
+            if member in task.members.all():
                 return Response({'error': 'Member is already a part of the task'})
             
-            task.members.add(members.first())
+            task.members.add(member)
             task.save()
             
-            return Response({'message': f'Member {members.first().user.email} added to task'})
+            return Response({'message': f'Member {member.user.email} added to task'})
             
         except Member.DoesNotExist:
             return Response({'error': 'Member does not exist in this task'}, status=status.HTTP_404_NOT_FOUND)
@@ -144,7 +142,7 @@ class AddMemberToTaskView(APIView):
 class RemoveMemberFromTaskView(APIView):
     '''View to remive a member from a task'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTaskWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, task_id, member_id):
         task = Task.objects.get(id=self.kwargs['task_id'])
@@ -170,7 +168,7 @@ class RemoveMemberFromTaskView(APIView):
 class ToggleCompletionStatusView(APIView):
     '''View to mark a task as complete'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTaskWorkspaceOwnerOrEditorOrReadOnly, IsMemberOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly, IsMemberOrReadOnly]
     
     def post(self, request, task_id):
         task = Task.objects.get(id=self.kwargs['task_id'])

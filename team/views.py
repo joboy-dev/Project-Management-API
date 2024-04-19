@@ -7,11 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from project.models import Project
-from project_management_api.permissions import IsVerifiedOrNoAccess
 from team.models import Team
-from team.permissions import IsTeamWorkspaceOwnerOrEditorOrReadOnly, IsTeamMemberOrReadOnly
 from workspace.models import Member
-from workspace.permissions import IsMemberOrReadOnly
+from workspace.permissions import IsMemberOrReadOnly, IsWorkspaceOwnerOrEditorOrReadOnly
 
 from . import serializers
 
@@ -20,7 +18,7 @@ User = get_user_model()
 class CreateTeamView(generics.CreateAPIView):
     '''View to create team for a project'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.CreateTeamSerializer
     queryset = Team.objects.all()
     
@@ -28,7 +26,7 @@ class CreateTeamView(generics.CreateAPIView):
 class TeamDetailsView(generics.RetrieveUpdateDestroyAPIView):
     '''View to get, update, and delete teams'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     serializer_class = serializers.TeamDetailsSerializer
 
     def get(self, request, *args, **kwargs):
@@ -61,7 +59,7 @@ class TeamDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class AddMemberToTeamView(APIView):
     '''View to add a member to a team'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, team_id, member_id):
         team = Team.objects.get(id=self.kwargs['team_id'])
@@ -90,7 +88,7 @@ class AddMemberToTeamView(APIView):
 class RemoveMemberFromTeamView(APIView):
     '''View to remove a member from a team'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess, IsTeamWorkspaceOwnerOrEditorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
     
     def post(self, request, team_id, member_id):
         team = Team.objects.get(id=self.kwargs['team_id'])
@@ -119,7 +117,7 @@ class RemoveMemberFromTeamView(APIView):
 class GetAllProjectTeams(generics.ListAPIView):
     '''View to get all teams in a specific project'''
     
-    permission_classes = [IsAuthenticated, IsVerifiedOrNoAccess]
+    permission_classes = [IsAuthenticated]
     serializer_class = serializers.TeamDetailsSerializer
     
     def get_queryset(self):

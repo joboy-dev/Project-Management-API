@@ -15,3 +15,6 @@ class Notification(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='receiver')
     date_sent = models.DateTimeField(auto_now_add=True)
     
+    def __str__(self):
+        return f'Notification from {self.sender.email} to {self.receiver.email}'
+    

@@ -143,9 +143,13 @@ AUTH_USER_MODEL = 'user.CustomUser'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'user.auth.BlacklistTokenAuthentication',
+        'user.authenticators.BlacklistTokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+    ],
+    'DEFAULT_PERMISSION_CLASSES': (
+        'project_management_api.permissions.IsActiveOrNoAccess',
+        'project_management_api.permissions.IsVerifiedOrNoAccess',
+    ),
 }
 
 SIMPLE_JWT = {
