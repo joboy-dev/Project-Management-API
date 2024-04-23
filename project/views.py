@@ -1,9 +1,8 @@
 from django.contrib.auth import get_user_model
 
-from rest_framework import generics
+from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 
 from project.models import Project
 from workspace.models import Member, Workspace
@@ -124,6 +123,9 @@ class GetProjectsInWorkspaceView(generics.ListAPIView):
     '''View to get all projects in a workspace'''
     
     serializer_class = serializers.ProjectDetailsSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
     
     def get_queryset(self):
         workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
@@ -131,16 +133,16 @@ class GetProjectsInWorkspaceView(generics.ListAPIView):
         
         return projects
     
-    def list(self, request, *args, **kwargs):
-        workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
-        projects = Project.objects.filter(workspace=workspace)
+    # def list(self, request, *args, **kwargs):
+    #     workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
+    #     projects = Project.objects.filter(workspace=workspace)
         
-        serializer = self.serializer_class(projects, many=True)
+    #     serializer = self.serializer_class(projects, many=True)
         
-        if projects.exists():
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'There are no projects in this workspace'}, status=status.HTTP_204_NO_CONTENT)
+    #     if projects.exists():
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     else:
+    #         return Response({'error': 'There are no projects in this workspace'}, status=status.HTTP_204_NO_CONTENT)
         
 
 class ToggleCompletionStatusView(generics.GenericAPIView):

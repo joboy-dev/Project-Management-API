@@ -16,4 +16,5 @@ urlpatterns = [
     path('account/token/refresh/', views.RefreshTokenView.as_view(), name='refresh-token'),
     path('account/delete/', views.DeleteAccountView.as_view(), name='delete-account'),
     path('<uuid:user_id>/', views.GetUserView.as_view(), name='get_user'),
+    path('all/', views.UserListView.as_view(), name='user-list'),
 ]

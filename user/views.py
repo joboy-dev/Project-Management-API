@@ -9,11 +9,10 @@ from django.urls import reverse
 from django.contrib.sites.shortcuts import get_current_site
 
 from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework import generics, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser
-from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenViewBase
 import jwt
@@ -45,6 +44,19 @@ def send_verification_email(request, email):
     }
     
     Util.send_email(data)
+    
+
+class UserListView(generics.ListAPIView):
+    '''View to get all logged in users and implement search functionality'''
+    
+    queryset = User.objects.all()
+    serializer_class = serializers.UserDetailsSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['first_name', 'last_name']
+    
+    def get_queryset(self):
+        return super().get_queryset()
     
     
 class RegisterView(generics.GenericAPIView):
