@@ -56,7 +56,23 @@ class WorkspaceDetailsView(generics.RetrieveUpdateDestroyAPIView):
             super().delete(request, *args, **kwargs)
             return Response({'message': 'Workspace deleted'}, status=status.HTTP_200_OK)
         except Workspace.DoesNotExist:
-            return Response({'error': 'Workspace does not exist'}, status=status.HTTP_404_NOT_FOUND)    
+            return Response({'error': 'Workspace does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class UpdateWorkspaceSubscriptionView(generics.UpdateAPIView):
+    '''View to update a worjspace subscription'''
+    
+    serializer_class = serializers.UpdateWorkspaceSubscriptionSerializer
+    permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrEditorOrReadOnly]
+    
+    def get_object(self):
+        workspace = Workspace.objects.get(id=self.kwargs['workspace_id'])
+        self.check_object_permissions(self.request, workspace)
+        return workspace
+    
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        return Response({'message': 'Subscription plan updated successfully.'}, status=status.HTTP_200_OK)
     
     
 class AddMemberToWorkspaceView(generics.CreateAPIView):

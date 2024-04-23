@@ -92,6 +92,28 @@ class WorkspaceDetailsSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
+class UpdateWorkspaceSubscriptionSerializer(serializers.ModelSerializer):
+    '''Serializer to update subscription plan for a workspace'''
+    
+    class Meta:
+        model = Workspace
+        fields = ['id', 'plan']
+        read_only_fields = ['id']
+        
+    def validate(self, data):
+        if data['plan'] not in ['basic', 'premium', 'enterprise']:
+            raise serializers.ValidationError({'error': 'This workspace plan is not available. Choose between basic, premium, and enterprise'})
+        
+        return data
+    
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+            
+        instance.save()
+        return instance
+    
+    
 
 class MemberSerializer(serializers.ModelSerializer):
     '''Serializer to add a member to a workspace and also get all members in a workspace'''
