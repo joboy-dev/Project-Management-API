@@ -262,3 +262,28 @@ class DeleteAccountView(APIView):
         
         user.save()
         return Response({'message': 'Account deleted successfully'}, status=status.HTTP_200_OK)
+    
+
+class GetUserView(generics.GenericAPIView):
+    '''View to get a user's details by id'''
+    
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.UserDetailsSerializer
+    
+    def get_object(self, user_id):
+        return User.objects.get(id=user_id)
+    
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            serializer = self.serializer_class(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'This user does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class SearchForUserView(generics.GenericAPIView):
+    '''View to search for users'''
+    
+    permission_classes = [IsAuthenticated]
+    
