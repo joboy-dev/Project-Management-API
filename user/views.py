@@ -292,10 +292,4 @@ class GetUserView(generics.GenericAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'This user does not exist'}, status=status.HTTP_404_NOT_FOUND)
-
-
-class SearchForUserView(generics.GenericAPIView):
-    '''View to search for users'''
-    
-    permission_classes = [IsAuthenticated]
     
