@@ -53,6 +53,20 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
+class Token(models.Model):
+    '''A model to store user access tokens'''
+    
+    token = models.CharField(max_length=500)
+    user = models.ForeignKey(CustomUser, related_name="user_token", on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f'{self.user.email}'
+
+    class Meta:
+        unique_together = ("token", "user")
+        
+
 class BlacklistedToken(models.Model):
     '''A model to store blacklisted tokens'''
     

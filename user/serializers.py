@@ -5,6 +5,8 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
+from .models import Token
+
 User = get_user_model()
 
 class CreateAccountSerializer(serializers.ModelSerializer):
@@ -102,6 +104,11 @@ class LoginSerializer(serializers.Serializer):
 
         # create token for jwt
         refresh_token = RefreshToken.for_user(user=user)
+        
+        Token.objects.create(
+            token=str(refresh_token.access_token),
+            user=user
+        )
         
         data['message'] = f'Welcome {email}'
         data['token'] = {

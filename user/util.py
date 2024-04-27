@@ -7,7 +7,15 @@ class Util:
     '''Utility class'''
     
     @staticmethod
-    def send_email(data):
+    def send_email(data: dict):
+        '''
+        Function to send verification email to a user;s email.\n
+        In the data dictionary, the following fields showuld be provided:
+            * subject - Subject of the email
+            * body - The content the email should contain
+            * email - The email the verification email should be sent to
+        '''
+        
         BASE_DIR = Path(__file__).resolve().parent.parent
         load_dotenv(os.path.join(BASE_DIR, ".env"))
         

@@ -17,7 +17,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenViewBase
 import jwt
 
-from user.models import BlacklistedToken
+from user.models import BlacklistedToken, Token
 
 from . import serializers
 from .util import Util
@@ -254,6 +254,14 @@ class LogoutView(APIView):
             token=request.headers.get('Authorization').split(' ')[1],
             expiration_date=datetime.now() + timedelta(minutes=10)
         )
+        
+        # Delete token fron database
+        token = Token.objects.get(
+            user=request.user,
+            token=request.headers.get('Authorization').split(' ')[1]
+        )
+        token.delete()
+        
         return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
         
 
