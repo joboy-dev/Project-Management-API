@@ -154,8 +154,11 @@ class ChangePasswordSerializer(serializers.Serializer):
         confirm_password = validated_data.get('confirm_password')
 
         user = authenticate(email=email, password=old_password)
+        current_user = self.context['request'].user
 
         if user is None:
+            raise serializers.ValidationError({'error': 'User credentials incorrect. Check your email and password and try again.'})
+        if user.email != current_user.email:
             raise serializers.ValidationError({'error': 'User credentials incorrect. Check your email and password and try again.'})
         elif old_password == new_password:
             raise serializers.ValidationError({'error': 'New password cannot be the same as old password.'})
